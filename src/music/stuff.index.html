@@ -1,0 +1,261 @@
+
+<span class="title-en">RH: Music</span>
+<span class="title-ru">РХ: Музыка</span>
+
+<style>
+	@font-face {
+		font-family: robotoMono;
+		src: url(/fonts/RobotoMono-Variable.ttf);
+	}
+	#player-container {
+        display: flex;
+		opacity: 0;
+        justify-content: center;
+        align-items: center;
+		transition: opacity 1s ease;
+	}
+	#player {
+		font-family: robotoMono;
+		max-width: 500px;
+	}
+	#player-actions * {
+		display: block;
+		margin: auto;
+		font-family: robotoMono;
+		font-size: 24px;
+		padding: 6px;
+    }
+	#player-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+	}
+	#time-lable-container {
+		display: flex;
+		justify-content: space-between;
+	}
+	/* Titles */
+	#title-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	#title {
+		padding: 20px;
+	}
+	#album-title-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	#album-title {
+		padding: 12px;
+	}
+	/* Slider styling */
+	.slider {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 200px;
+		height: 10px;
+		background: var(--col-sp);
+		outline: none;
+	}
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		background: var(--col-sp);
+		cursor: pointer;
+		border-radius: 50%;
+	}
+	.slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		background: var(--col-sp);
+		cursor: pointer;
+		border-radius: 50%;
+		border: none;
+	}
+	/* Slider transform */
+	#seek-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+	#slider-seek {
+		width: 100%;
+	}
+	#volume-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding-top: 32px;
+		margin: 8px;
+	}
+	#slider-volume {
+		width: 35%;
+		margin: 8px;
+	}
+	.album-preview {
+		width: 100px;
+		height: 100px;
+	}
+</style>
+
+<audio id="audio-source" style="display: none;"></audio>
+
+<div class="page-nav-list">
+	<a id="old-picks.json" class="album">
+		<span class="album-title-data">
+			<span class="lang-en">Old Picks</span>
+			<span class="lang-ru">Старые Неплохие</span>
+		</span>
+		<img class="album-preview" src="@insert.href-media@/music/default-cover.jpg"></img>
+	</a>
+</div>
+
+<hr>
+
+<div id="player-container">
+	<div id="player">
+		<div id="album-title-container">
+			<span id="album-title">Choose song</span><span id="song-counter"></span>
+		</div>
+		<img id="album-cover"></img>
+		<div id="title-container">
+			<span id="title">Choose song</span>
+		</div>
+		<div id="seek-container">
+			<input type="range" class="slider" id="slider-seek" min="0" max="100" value="0" step="1">
+		</div>
+		<div id="time-lable-container">
+			<span id="time-current">00:00</span>
+			<span id="time-total">00:00</span>
+		</div>
+		<div id="player-actions">
+			<a id="act-prev">&lt;&lt;</a>
+			<a id="act-pause">|&gt;</a>
+			<a id="act-next">&gt;&gt;</a>
+		</div>
+		<div id="volume-container">
+			<span>:*</span><input type="range" class="slider" id="slider-volume" min="0" max="100" value="100" step="1"><span>:O</span>
+		</div>
+	</div>
+</div>
+
+<script>
+	// Elements
+	const audioSource = document.getElementById('audio-source');
+	const playerContainer = document.getElementById('player-container');
+	const songCounter = document.getElementById('song-counter');
+	const albumTitleElement = document.getElementById('album-title');
+	const titleElement = document.getElementById('title');
+	const albumCover = document.getElementById('album-cover');
+	const actNext  = document.getElementById('act-next');
+	const actPause = document.getElementById('act-pause');
+	const actPrev  = document.getElementById('act-prev');
+	const timeCurrent = document.getElementById('time-current');
+	const timeTotal = document.getElementById('time-total');
+	const sliderSeek = document.getElementById('slider-seek');;
+	const sliderVolume = document.getElementById('slider-volume');;
+	// State variables
+	var albumTitle = null;
+	var albumData = null;
+	var trackIndex = 0;
+	var isPlaying = false;
+	// Actions
+	function LoadTrack() {
+		if (albumData == null)
+			return;
+		// Cut the tail for title
+		var title = albumData.tracks[trackIndex].fname;
+		const lastDotIndex = title.lastIndexOf('.');
+		if (lastDotIndex !== -1)
+			title = title.substring(0, lastDotIndex);
+		// Set titles
+		titleElement.textContent = title;
+		albumTitleElement.innerHTML = albumTitle;
+		songCounter.textContent = ' ('+(trackIndex+1)+'/'+albumData.tracks.length+')';
+		// Lang
+		PageUpdate();
+		// Set cover art
+		albumCover.src = '@insert.href-media@/music/default-cover.jpg';
+		if (albumData.cover_path.length != 0)
+			albumCover.src = '@insert.href-media@/'+albumData.cover_path;
+		// Load
+		audioSource.src = "@insert.href-media@/music/"+albumData.tracks[trackIndex].fname;
+		audioSource.load();
+		TrackPause(isPlaying);
+	}
+	// Load album
+	document.querySelectorAll('.album').forEach(element => {
+		element.addEventListener('click', async function(event) {
+			event.preventDefault();
+			albumTitle = this.querySelector('.album-title-data').innerHTML;
+			var fname = '/music/albums/'+this.id;
+			albumData = JSON.parse(await FetchText(fname));
+			LoadTrack();
+			TrackPause(false);
+			playerContainer.style.opacity = "1";
+		});
+	});
+	// Pause/Play
+	function TrackPause(state) {
+		isPlaying = state;
+		if (isPlaying == false)
+			audioSource.pause();
+		else
+			audioSource.play();
+		actPause.textContent = isPlaying ? '||' : '|>';
+	}
+	actPause.addEventListener('click', () => {
+		event.preventDefault();
+		TrackPause(!isPlaying);
+	});
+	// Next/Previous
+	function NextTrack() {
+		event.preventDefault();
+		trackIndex++;
+		if (trackIndex >= albumData.tracks.length)
+			trackIndex = 0;
+		LoadTrack();
+	}
+	actNext.addEventListener('click', () => {
+		event.preventDefault();
+		NextTrack();
+	});
+	audioSource.addEventListener("ended", (event) => { NextTrack(); });
+	actPrev.addEventListener('click', () => {
+		trackIndex--;
+		if (trackIndex < 0)
+			trackIndex = albumData.tracks.length-1;
+		LoadTrack();
+	});
+	// Slider change
+	sliderSeek.addEventListener('change', () => {
+		var time = audioSource.duration*(sliderSeek.value/100);
+		audioSource.currentTime = time;
+	});
+	sliderVolume.addEventListener('change', () => {
+		var volume = sliderVolume.value/100;
+		audioSource.volume = volume;
+	});
+	// Update slider state & time
+	function GetTime(timeSec) {
+		let min = Math.floor(timeSec/60);
+		let sec = Math.floor(timeSec-min*60);
+		if (sec < 10) sec = "0"+sec;
+		if (min < 10) min = "0"+min;
+		return min+":"+sec;
+	}
+	var timeUpdateTimer = setInterval(() => {
+		if (!isNaN(audioSource.duration)) {
+			var seekPos = audioSource.currentTime*(100/audioSource.duration);
+			sliderSeek.value = seekPos;
+			timeCurrent.textContent = GetTime(audioSource.currentTime);
+			timeTotal.textContent = GetTime(audioSource.duration);
+		}
+	}, 500);
+</script>

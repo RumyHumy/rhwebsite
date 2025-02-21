@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="/scripts/page.js"></script>
+	</head>
+	<body>
+		<span class="title-en">RH: Music</span>
+<span class="title-ru">РХ: Музыка</span>
+
+<style>
+@font-face {
+	font-family: robotoMono;
+	src: url(/fonts/RobotoMono-Variable.ttf);
+}
+body {
+	background-color: #050507;
+}
+#ascii-player {
+	margin: auto;
+	font-family: robotoMono;
+	white-space: nowrap;
+	line-height: 1.1;
+	color: #455;
+	width: fit-content;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+#ascii-player a {
+	text-decoration: none;
+	color: lime;
+}
+.ascii-field {
+	color: #ddd;
+}
+</style>
+
+<!--
+	................................<br>
+	..+--------------------------+..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..|##########################|..<br>
+	..+--------------------------+..<br>
+	................................<br>
+	. yHumy - cool shit OMG fuckin .<br>
+	................................<br>
+	..[======|-------------------]..<br>
+	..01:08..................05:43..<br>
+	.....//........__........\\.....<br>
+	.....\\........|>........//.....<br>
+	................................<br>
+	..Volume........................<br>
+	..[=====|--]...Song:0000/0002...<br>
+	................................<br>
+-->
+
+<div id="ascii-player">
+<b>
+	................................<br>
+	............<a href="/" class="lang-en">RumyHumy</a><a href="/" class="lang-ru">РумуХуму</a>............<br>
+	................................<br>
+	. Album: <span class="ascii-field" id="ascii-album-title"></span><br>
+	................................<br>
+	..<span class="ascii-field">+--------------------------+</span>..<br>
+	..<span class="ascii-field">|..........................|</span>..<br>
+	..<span class="ascii-field">|.............|@@@\........|</span>..<br>
+	..<span class="ascii-field">|.............||\@@\.......|</span>..<br>
+	..<span class="ascii-field">|.............||.\@@\......|</span>..<br>
+	..<span class="ascii-field">|.............||..\@@@|....|</span>..<br>
+	..<span class="ascii-field">|.............||...........|</span>..<br>
+	..<span class="ascii-field">|.............||...........|</span>..<br>
+	..<span class="ascii-field">|......./@@@@@@|...........|</span>..<br>
+	..<span class="ascii-field">|....../@@@@@@@|...........|</span>..<br>
+	..<span class="ascii-field">|......|@@@@@@@|...........|</span>..<br>
+	..<span class="ascii-field">|......\@@@@@@@/...........|</span>..<br>
+	..<span class="ascii-field">|.......\@@@@@/............|</span>..<br>
+	..<span class="ascii-field">|..........................|</span>..<br>
+	..<span class="ascii-field">+-----------------<span id="ascii-index" class="ascii-field">--------</span>-+</span>..<br>
+	................................<br>
+	.. <span id="ascii-title" class="ascii-field"></span> ..<br>
+	................................<br>
+	..<span id="ascii-seek"></span>..<br>
+	..<span id="ascii-curr" class="ascii-field">??:??</span>..................<span id="ascii-dur" class="ascii-field">??:??</span>..<br>
+	................................<br>
+
+	.....<a href="#" id="ascii-prev" onclick="TrackPrev(); return false;">??</a>........<a href="#" id="ascii-play-pause" onclick="TrackPlayPause(!isPlaying); return false;">??</a>........<a href="#" id="ascii-next" onclick="TrackNext(); return false;">??</a>.....<br>
+
+	................................<br>
+
+	..<span class="lang-en ascii-field">Volume:</span><span class="lang-ru ascii-field">Звук:&nbsp;&nbsp;</span>.......................<br>
+	..<span id="ascii-volume"></span>........<span class="lang-en">...</span><a href="#" onclick="TrackShuffle(); return false;"><span class="lang-en">Shuffle</span><span class="lang-ru">Вперемешку</span></a>..<br>
+
+	................................<br>
+	................................<br>
+	................................<br>
+
+	. > <a class="album-click" href="#">Old Favorites</a><br>
+	. > <a class="album-click" href="#">Old Trash</a><br>
+
+	................................<br>
+
+	<div id="page-footer">
+		&nbsp;
+		<span class="lang-en">
+			2024 * Ramil Khasanshin |
+			<a href='#' onclick='localStorage.setItem("lang", "ru"); SetLang(); return false;'>РУС</a>
+		</span>
+		<span class="lang-ru">
+			2024 * Рамиль Хасаншин |
+			<a href='#' onclick='localStorage.setItem("lang", "en"); SetLang(); return false;'>ENG</a>
+		</span>
+	</div>
+	................................<br>
+</b>
+</div>
+
+<audio id="music-audio" styles="display: none;"></audio>
+
+
+<!--<div id="albums-info" style="display: none;">
+Old Favorites;
+Old Trash;
+</div>-->
+
+<div id="tracks-info" style="display: none;">
+Ramil - FaLaDo.opus|;
+RumyHumy - Catchy.opus|;
+RumyHumy - Boxes.opus|;
+RumyHumy - Laska.opus|;
+</div>
+
+<script>
+// ASCII elements
+var aelSeek = document.getElementById('ascii-seek');
+var aelVolume = document.getElementById('ascii-volume');
+var aelPrev = document.getElementById('ascii-prev');
+aelPrev.innerHTML = '<<';
+var aelNext = document.getElementById('ascii-next');
+aelNext.innerHTML = '>>';
+var aelPlayPause = document.getElementById('ascii-play-pause');
+aelPlayPause.innerHTML = '|>';
+var aelTitle = document.getElementById('ascii-title');
+var aelCurr = document.getElementById('ascii-curr');
+var aelDur = document.getElementById('ascii-dur');
+var aelIndex = document.getElementById('ascii-index');
+var aelAlbumTitle = document.getElementById('ascii-album-title');
+
+// Player
+var trackTitle = '???                ';
+var trackTitleStep = 0;
+var trackIndex = 0;
+var isPlaying = false;
+
+//var albumsInfo = document.getElementById('albums-info').innerHTML.trim().replace('\n', '').split(';');
+//for (var i = 0; i < albumsInfo.length; i++)
+//	albumsInfo[i] = albumsInfo[i].trim();
+
+var tracksInfo = null;
+function ParseTracksInfo() {
+	tracksInfo = document.getElementById('tracks-info').innerHTML.trim().replace('\n', '').split(';');
+	for (var i = 0; i < tracksInfo.length; i++) {
+		if (tracksInfo[i].trim().length == 0) {
+			tracksInfo.pop(i);
+			break;
+		}
+		tracksInfo[i] = tracksInfo[i].split('|');
+	}
+}
+
+ParseTracksInfo();
+
+var elAudio = document.getElementById('music-audio');
+
+// Functions
+function ToStrMinutesSeconds(time) {
+	var smin = Math.floor(time/60);
+	var ssec = Math.floor(time)%60;
+	if (smin > 99) smin = '**';
+	if (ssec < 10) ssec = '0'+ssec;
+	if (smin < 10) smin = '0'+smin;
+	return smin+':'+ssec;
+}
+
+function Loopback() {
+	// Seek
+	var seekText = '';
+	for (var i = 0; i < 28; i++) {
+		if (isNaN(elAudio.duration)) {
+			seekText += '?';
+			continue;
+		}
+		var trackNorm = elAudio.currentTime/elAudio.duration;
+		var sliderNorm = i/27;
+		var v = "?";
+		if (i == 0)
+			v = "[";
+		else if (i == 27)
+			v = "]";
+		else if (Math.round(sliderNorm*27) == Math.round(trackNorm*27))
+			v = "|";
+		else if (trackNorm > sliderNorm)
+			v = "=";
+		else
+			v = "-";
+		seekText += "<a href=\"#\" onclick=\"elAudio.currentTime="+sliderNorm*elAudio.duration+"; return false;\">"+v+"</a>";
+	}
+	if (seekText != aelSeek.innerHTML)
+		aelSeek.innerHTML = seekText;
+
+	// Volume
+	var volumeText = '';
+	for (var i = 0; i < 10; i++) {
+		if (isNaN(elAudio.volume)) {
+			volumeText += '?';
+			continue;
+		}
+		var trackNorm = elAudio.volume;
+		var sliderNorm = i/9;
+		var v = "?";
+		if (i == 0)
+			v = "[";
+		else if (i == 9)
+			v = "]";
+		else if (Math.round(sliderNorm*9) == Math.round(trackNorm*9))
+			v = "|";
+		else if (trackNorm > sliderNorm)
+			v = "=";
+		else
+			v = "-";
+		volumeText += "<a href=\"#\" onclick=\"elAudio.volume="+sliderNorm+"; return false;\">"+v+"</a>";
+	}
+	if (volumeText != aelVolume.innerHTML)
+			aelVolume.innerHTML = volumeText;
+	
+	// PlayPause update
+	aelPlayPause.innerHTML = (isPlaying ? '||' : '|&gt;');
+	
+	// Title update
+	aelTitle.innerHTML = '';
+	for (var i = 0; i < 26; i++) {
+		var ch = trackTitle[(i+trackTitleStep)%trackTitle.length];
+		aelTitle.innerHTML += (ch == " " ? "&nbsp;" : ch);
+	}
+	trackTitleStep++;
+	if (trackTitleStep >= trackTitle.length)
+		trackTitleStep = 0;
+	
+	// Time
+	if (!isNaN(elAudio.duration)) {
+		aelCurr.innerHTML = ToStrMinutesSeconds(elAudio.currentTime);
+		aelDur.innerHTML = ToStrMinutesSeconds(elAudio.duration);
+	}
+}
+
+function TrackLoad() {
+	trackTitleStep = 0;
+	trackTitle = "      "+tracksInfo[trackIndex][0].slice(0, -5)+"      ";
+	elAudio.src = "http://194.87.84.74/media/music/"+tracksInfo[trackIndex][0];
+	elAudio.load();
+	aelIndex.textContent = (trackIndex+1)+"/"+tracksInfo.length;
+	if (aelIndex.textContent.length < 8) {
+		var indexText = aelIndex.textContent;
+		var toadd = (8-aelIndex.textContent.length)/2;
+		for (var i = 0; i < 8-aelIndex.textContent.length; i++) {
+			if (i < toadd)
+				indexText = '>'+indexText;
+			else
+				indexText = indexText+'<';
+		}
+		aelIndex.innerHTML = indexText;
+	} else if (aelIndex.textContent.length > 8) {
+		aelIndex.textContent += 'ERROR....';
+	}
+	TrackPlayPause(isPlaying);
+}
+
+function TrackShuffle() {
+	for (var i = 0; i < tracksInfo.length; i++) {
+		var j = Math.floor(Math.random()*tracksInfo.length);
+		var tmp = tracksInfo[i];
+		tracksInfo[i] = tracksInfo[j];
+		tracksInfo[j] = tmp;
+	}
+	TrackLoad();
+}
+
+function TrackNext() {
+	trackIndex++;
+	if (trackIndex >= tracksInfo.length)
+		trackIndex = 0;
+	TrackLoad();
+	Loopback();
+}
+
+function TrackPrev() {
+	trackIndex--;
+	if (trackIndex < 0)
+		trackIndex = tracksInfo.length-1;
+	TrackLoad();
+	Loopback();
+}
+
+function TrackPlayPause(state) {
+	isPlaying = state;
+	if (isPlaying == false)
+		elAudio.pause();
+	else
+		elAudio.play();
+	Loopback();
+}
+
+async function AlbumClick(albname) {
+	aelAlbumTitle.textContent = albname;
+	var fname = "/music/albums/"+albname;
+	document.getElementById('tracks-info').innerHTML = await FetchText(fname);
+	ParseTracksInfo();
+	trackIndex = 0;
+	TrackLoad();
+}
+
+document.querySelectorAll('.album-click').forEach(element => {
+	element.addEventListener('click', async function(event) {
+		event.preventDefault();
+		await AlbumClick(this.textContent);
+	});
+});
+
+TrackLoad();
+
+var intervalId = window.setInterval(Loopback, 200);
+
+elAudio.addEventListener("ended", (event) => {
+	isPlaying = true;
+	TrackNext();
+});
+
+Loopback();
+
+//document.getElementById('testb').addEventListener('click', async () => {
+//	const fileContents = await FetchText("index.html");
+//	alert(fileContents);
+//});
+</script>
+		<script> PageUpdate(); </script>
+	</body>
+</htm

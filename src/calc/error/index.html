@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="/styles.css" rel="stylesheet"/>
+		<script src="/scripts/page.js"></script>
+	</head>
+	<body>
+		<h1 id="page-header">
+			<a href="/" style="color: unset; text-decoration: none;">
+				<span class="lang-en">RumyHumy</span>
+				<span class="lang-ru">РумуХуму</span>
+			</a>
+		</h1>
+		<div class="page-spotlight">
+			<div class="page-content">
+				<script>
+function getNumberRank(n) {
+	if (n == 0.0)
+		return null;
+
+	n = Math.abs(n);
+	for (var i = 12; i >= -12; i--) {
+		if (Math.round(n/10**i) > 0)
+			return i;
+	}
+	return null;
+}
+
+function roundp(n, p) {
+	var dp = 10**p;
+	return Math.round(n*dp)/dp;
+}
+
+function displayError(err) {
+	document.getElementById('ec-errstr').style.display = (err ? 'block' : 'none');
+	return 1;
+}
+
+const studTable = { 2: 12.7, 3: 4.3, 4: 3.2, 5: 2.8, 6: 2.6, 7: 2.5, 8: 2.4, 9: 2.3, 10: 2.3 };
+const studBig = 2.0;
+const blundTable = { 3: 0.94, 4: 0.76, 5: 0.64, 6: 0.58, 7: 0.51, 8: 0.48, 9: 0.45, 10: 0.41 };
+const blundBig = 0.20;
+async function getClipboard() {
+	return await navigator.clipboard.read();
+}
+function getResult() {
+	displayError(0);
+	var samplestr = document.getElementById('ec-samples').value;
+	var samples = samplestr.replaceAll(',', '.').replace(/\s+/g, ' ').trim().split(' ');
+	var X = [];
+	for (var s of samples) {
+		var parsed = parseFloat(s);
+		if (Number.isNaN(parsed))
+			return displayError('ec-errstr-parse-samples');
+		X.push(parsed);
+	}
+	if (X.length < 2)
+		return displayError('ec-errstr-too-few');
+	X.sort(function(a, b) { return (+a)-(+b); });
+	// Range
+	var range = Math.max(...X)-Math.min(...X);
+	// Blunders
+	var blund = blundBig;
+	if (X.length <= 10)
+		blund = blundTable[X.length];
+	blundstr = '<br>'
+	for (var i = 0; i < X.length-1; i++) {
+		x1 = roundp(X[i+1], 3);
+		x2 = roundp(X[i], 3);
+		diff = roundp((x1-x2), 3);
+		allowed = roundp(blund*range, 3);
+		blundstr += x1 + ' - ' + x2 + ' ≈ ' + diff + (diff < allowed ? ' < ' : ' > ') + allowed;
+		blundstr += (diff < allowed ? ' ✅' : ' ❌');
+		if (i != X.length-2)
+			blundstr += '<br>';
+	}
+	// Average of X
+	var aver = 0;
+	for (var x of X)
+		aver += x;
+	aver /= X.length;
+	// MSE
+	var mse = 0;
+	for (var x of X)
+		mse += (x-aver)**2;
+	mse /= X.length;
+	mse = Math.sqrt(mse)
+	// MSEM
+	var msem = mse/Math.sqrt(X.length);
+	// Student
+	var stud = studBig;
+	if (X.length <= 10)
+		stud = studTable[X.length];
+	// Random Error
+	var randerr = stud * msem;
+	// Error
+	var insterr = parseInt(document.getElementById('ec-inst').value);
+	var err = Math.sqrt(randerr**2 + insterr**2);
+	// Show
+	document.getElementById('ec-vsamples').innerHTML = X.length+': '+X.join(', ');
+	document.getElementById('ec-range').innerHTML = roundp(range, 5);
+	document.getElementById('ec-blund').innerHTML = blundstr;
+	document.getElementById('ec-aver').innerHTML = roundp(aver, 5);
+	document.getElementById('ec-mse').innerHTML = roundp(mse, 5);
+	document.getElementById('ec-msem').innerHTML = roundp(msem, 5);
+	var aperc = -getNumberRank(aver);
+	var eperc = -getNumberRank(err);
+	if (!aperc || !eperc) perc = 12;
+	var perc = Math.max(aperc, eperc);
+	document.getElementById('ec-result').innerHTML = '<br>'+aver+' ± '+err+'<br>';
+	document.getElementById('ec-result').innerHTML += roundp(aver, perc)+' ± '+roundp(err, perc);
+	document.getElementById('ec-rel-err').innerHTML = roundp((err/aver*100), 1)+'%';
+}
+
+const beforeUnloadHandler = (event) => {
+  event.preventDefault();
+  event.returnValue = true;
+};
+</script>
+
+<span class="title-en">RH: Error calculator</span>
+<span class="title-ru">РХ: Калькулятор погрешностей</span>
+
+<h1>
+	Калькулятор погрешностей
+</h1>
+
+<hr>
+
+<style>
+#calc-field em {
+	color: var(--col-sp);
+	font-weight: bold;
+}
+</style>
+
+<div id="calc-field">
+	<p>
+		Доверительная вероятность 95%. Вводите элементы выборки через пробел. Вещественные через точечку.
+	</p>
+	<p>
+		Выборка
+		<textarea id="ec-samples" >3.2 2.9 2.8 3.2 3.0</textarea><br>
+
+		Погрешность прибора
+		<input id="ec-inst" name="ec-inst" type="number" min="0" max="1000000" value='0.2'/>
+	</p>
+	<p>
+		<button id="ec-submit" onclick="getResult()" style="margin: auto;">Делаем</button>
+	</p>
+	<br>
+	<p id="ec-errstr" style="display: none;">
+		<em>Ошибка при вводе значений</em>
+	</p>
+	<hr>
+	<p>
+		Выборка:
+		<em id="ec-vsamples"></em>
+		<br>
+		Размах:
+		<em id="ec-range"></em>
+		<br>
+		Грубые промахи:
+		<em id="ec-blund"></em>
+		<br>
+		Среднее:
+		<em id="ec-aver"></em>
+		<br>
+		СКО:
+		<em id="ec-mse"></em>
+		<br>
+		СКОС:
+		<em id="ec-msem"></em>
+		<br>
+		Результат:
+		<em id="ec-result"></em>
+		<br>
+		Относительная погрешность:
+		<em id="ec-rel-err"></em>
+	</p>
+</div>
+
+<script>
+const nameInput = document.getElementById("ec-samples");
+window.addEventListener("beforeunload", beforeUnloadHandler);
+</script>
+			</div>
+		</div>
+		<div id="page-footer">
+	<span class="lang-en">
+		© 2025 • Ramil Khasanshin |
+		<a href='#' onclick='localStorage.setItem("lang", "ru"); SetLang(); return false;'>Русский</a>
+	</span>
+	<span class="lang-ru">
+		© 2025 • Рамиль Хасаншин |
+		<a href='#' onclick='localStorage.setItem("lang", "en"); SetLang(); return false;'>English</a>
+	</span>
+</div>
+		<script> PageUpdate(); </script>
+	</body>
+</htm

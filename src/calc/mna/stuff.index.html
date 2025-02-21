@@ -1,0 +1,47 @@
+<span class="title-en">RH: MNA</span>
+<span class="title-ru">РХ: МУП</span>
+
+<h1>
+	<span class="lang-en">MNA (Modified Nodal Analysis)</span>
+	<span class="lang-ru">МУП (Метод Узловых Потенциалов)</span>
+</h1>
+
+<hr>
+
+<style>
+#calc-field em {
+	color: var(--col-sp);
+	font-weight: bold;
+}
+</style>
+
+<div id="calc-field">
+	<p>
+	Введите цепь в формате <i>[узел1] [узел2] [элемент_название1] [значение]</i> для каждого элемента через ",".
+	</p>
+	<p>
+		<span class="lang-en">Circuit</span>
+		<span class="lang-ru">Цепь</span>
+		<textarea id="circ-text" >1 2 u0 3, 2 3 r1 2, 3 1 i2 2, 3 1 r3 1</textarea><br>
+	</p>
+	<p>
+		<button id="calc" style="margin: auto;">Делаем</button>
+	</p>
+	<br>
+	<p id="ec-errstr" style="display: none;">
+		<em>Ошибка при вводе значений</em>
+	</p>
+	<hr>
+	<p>
+	</p>
+</div>
+
+<script>
+	var calcButton = document.getElementById("calc");
+	calcButton.addEventListener('click', () => {
+		var circText = document.getElementById("circ-text").textContent;
+		circ = circText.split(',')
+		//for (var i = 0; i <
+	});
+	window.addEventListener("beforeunload", beforeUnloadHandler);
+</script>

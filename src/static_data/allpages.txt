@@ -1,0 +1,5 @@
+/archive
+/archive/school
+/projects
+/projects/error-calc
+/about

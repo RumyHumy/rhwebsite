@@ -1,0 +1,26 @@
+{
+	"tracks": [
+		{"fname": "RumyHumy - Lose.opus"},
+		{"fname": "RumyHumy - Catchy.opus"},
+		{"fname": "RumyHumy - Laska.opus"},
+		{"fname": "Ramil - FaLaDo.opus"},
+		{"fname": "RumyHumy - Unknown 1.opus"},
+		{"fname": "RumyHumy - Unknown 11.opus"},
+		{"fname": "RumyHumy - Unknown 14.opus"},
+		{"fname": "RumyHumy - Unknown 33 (Loneliness).opus"},
+		{"fname": "RumyHumy - Unknown 34-1 (Meaninglessnes).opus"},
+		{"fname": "RumyHumy - Unknown 34-2 (Meaninglessnes).opus"},
+		{"fname": "RumyHumy - Guitar Test.opus"},
+		{"fname": "RumyHumy, Khybkaryan - Cozy light adventure (ыыыыы).opus"},
+		{"fname": "RumyHumy - Leave.opus"},
+		{"fname": "RumyHumy - NDA1.opus"},
+		{"fname": "RumyHumy - Timer.opus"},
+		{"fname": "RumyHumy (Ramil) - Last.opus"},
+		{"fname": "RumyHumy - Toner.opus"},
+		{"fname": "RumyHumy - Claustrophobia.opus"},
+		{"fname": "RumyHumy - Бит 6.opus"},
+		{"fname": "RumyHumy - Boxes.opus"},
+		{"fname": "Ramil - City's night lamps.opus"}
+	],
+	"cover_path": "music/default-cover.jpg"
+}

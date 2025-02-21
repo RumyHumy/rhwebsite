@@ -1,0 +1,21 @@
+# rumyhumyorg
+## Structure
+./scr - scripts
+	baker.py - puts "stuff" and "templ" in "dough"
+		Example:
+		1) Finds 'stuff.index.html' in each folder
+		2) Wraps contents with 'src/templates/dough.index.html'
+		3) Inserts all the 'src/templates/insert.*' found in file
+		4) Saves 'index.html'
+		Algorithm:
+		For each folder in './src'
+			For each './src/.../stuff.<name>'
+				1) Loads corresponding text from './src/templates/dough.<name>'
+				2) Replaces '@stuff.<name>\#'
+				   with contents from './src/.../stuff.<name>' 
+				3) Replaces each '@other.<name>.<subname>@'
+				   with contents from './src/.../other.<other_name>'
+				4) Replaces each '@insert.<insert_name>@'
+				   with contents from './src/templates/insert.<insert_name>'
+				5) Saves as './src/.../<name>'
+	page-lister.py - lists all paths to "index.html" files

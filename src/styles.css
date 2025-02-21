@@ -1,0 +1,247 @@
+@font-face {
+	font-family: czizhBodyFont;
+	src: url(/fonts/Czizh-Body.ttf);
+}
+
+@font-face {
+	font-family: nunitoFont;
+	src: url(/fonts/Nunito-Variable.ttf);
+}
+
+:root {
+	--col-t:     rgb(254 254 245);
+	--col-tshad: rgb(246 85 85);
+	--col-bg:    rgb(15 20 25);
+	--col-fg:    rgb(232 232 212);
+	--col-se:    rgb(97 100 107);
+	--col-sp:    rgb(246 85 85);
+}
+
+@media (prefers-color-scheme: light) {
+	:root {
+		--col-t:     rgb(235 120 71);
+		--col-tshad: rgb(55 55 65);
+		--col-bg:    rgb(242 240 215);
+		--col-fg:    rgb(50 70 70);
+		--col-se:    rgb(120 123 130);
+		--col-sp:    rgb(205 90 31);
+	}
+}
+
+body {
+	font-size: 18px;
+	font-family: nunitoFont;
+	background-color: var(--col-bg);
+	color: var(--col-fg);
+}
+
+/* General page attributes */
+
+#page-header {
+	margin: 0 0 18px 0;
+	padding-top: 18px;
+	padding-bottom: 32px;
+	color: var(--col-t);
+	font-family: czizhBodyFont;
+	font-size: 72px;
+	text-align: center;
+	text-shadow: var(--col-tshad) 1.5px 1.5px;
+	@media (prefers-color-scheme: dark) {
+		text-shadow: var(--col-tshad) 1.5px 1.5px, var(--col-tshad) 0px 0px 5px;
+	}
+}
+
+#page-footer {
+	display: block;
+	margin: 16px;
+	color: var(--col-se);
+	text-align: center;
+}
+
+.page-spotlight {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+/* CONTENT */
+
+.page-content {
+	width: 90%;
+	margin: auto;
+	padding-bottom: 72px;
+	/*border: 4px solid var(--col-se);
+	border-radius: 7px;
+	box-shadow: var(--col) 3px 3px;
+	background-color: var(--col-se-s);*/
+}
+
+@media (orientation: landscape) {
+	.page-content {
+		width: 45%; 
+	}
+}
+
+/* Headers */
+
+.page-content :is(h1, h2, h3, h4, h5, h6) {
+	text-align: center;
+	margin: 14px;
+	padding: 14px;
+}
+
+/* Paragraphs */
+
+.page-content p {
+	/*text-align: justify;*/
+	margin-top: 24px;
+	margin-bottom: 24px;
+	@media (orientation: landscape) {
+		margin-left: 20px;
+		margin-right: 20px;
+	}
+}
+
+/* Hyperlinks */
+
+.page-content a {
+	color: var(--col-sp);
+	/*transition: color 0.05s ease;
+	text-decoration: underline;*/
+	cursor: default;
+}
+
+.page-content a:hover {
+	color: var(--col-fg);
+	/*transform: scale(1.15);*/
+	@media (prefers-color-scheme: dark) {
+		text-shadow: 0px 0px 1.5px var(--col-fg);
+	}
+	cursor: pointer;
+}
+
+/* Navigation lists */
+
+.page-nav-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 1rem;
+	padding: 1rem;
+}
+.page-nav-list a {
+	display: block;
+	padding: 1rem;
+	color: var(--col-sp);
+	text-align: center;
+	text-decoration: none;
+	/*transition: transform 0.1s;*/
+}
+.page-nav-list a:hover {
+	color: var(--col-fg);
+	/*transform: scale(1.15);*/
+	@media (prefers-color-scheme: dark) {
+		text-shadow: 0px 0px 1.5px var(--col-fg);
+	}
+}
+.page-nav-list a:hover * {
+	transform: scale(1.1);
+}
+
+/* Input fields */
+
+button {
+	display: block;
+	font-family: nunitoFont;
+	color: var(--col-fg);
+	background-color: var(--col-bg);
+	box-shadow: 3px 3px var(--col-se);
+	border: 2px solid var(--col-se);
+	border-radius: 5px;
+	padding: 12px 14px;
+	/*transition:
+		color 0.02s,
+		transform 0.02s,
+		box-shadow 0.05s;*/
+}
+
+button:hover {
+	color: var(--col-se);
+}
+
+button:active {
+	transform: translate(1.5px, 1.5px);
+	box-shadow: 0px 0px var(--col-se);
+}
+
+input[type=text], input[type=number], select, textarea {
+	display: inline-block;
+	padding: 12px 14px;
+	margin: 8px 0;
+	font-size: 14px;
+	font-family: nunitoFont;
+	color: var(--col-fg);
+	background-color: var(--col-bg);
+	border: 2px solid var(--col-se);
+	border-radius: 4px;
+	box-sizing: border-box;
+	/*transition: border 0.1s;*/
+}
+
+textarea {
+	width: 100%;
+	resize: none;
+}
+
+textarea:focus, input:focus, button:focus {
+    outline: none;
+	border: solid 2px var(--col-fg);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 16px;
+	margin-bottom: 16px;
+	width: 50%; 
+	height: auto;
+	@media (orientation: portrait) {
+		width: 100%; 
+		height: auto;
+	}
+}
+
+video {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 16px;
+	margin-bottom: 16px;
+    width: 100%;
+	height: auto; 
+}
+
+audio {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 16px;
+	margin-bottom: 16px;
+    width: 60%;
+	height: auto; 
+}
+
+hr {
+	border: solid 1px var(--col-se);
+}
