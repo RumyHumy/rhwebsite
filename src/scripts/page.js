@@ -6,15 +6,18 @@ function ElementVisibility(selector, state) {
 	document.querySelectorAll(selector).forEach(tag => tag.style.display = (state ? 'inline' : 'none'));
 }
 
-function SetLang() {
+function GetLangCode() {
 	var lang = localStorage.getItem("lang");
 	if (lang === null)
 		lang = navigator.language || navigator.userLanguage;
-
 	if (!lang)
 		lang = "en";
-
 	lang = lang.toLowerCase();
+	return lang;
+}
+
+function SetLang() {
+	var lang = GetLangCode();
 
 	ElementVisibility(".title-ru", false);
 	ElementVisibility(".title-en", false);

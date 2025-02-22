@@ -34,7 +34,8 @@
 
 <div id="calc-field">
 	<p>
-	Введите цепь в формате <i>[узел1] [узел2] [элемент_название1] [значение]</i> для каждого элемента через ",".
+		<span class="lang-en">Enter circuit information in this format <i>[node1] [node2] [type_name] [value]</i> for each element separated by ",".</span>
+		<span class="lang-ru">Введите цепь в формате <i>[узел1] [узел2] [тип_название1] [значение]</i> для каждого элемента через ",".</span>
 	</p>
 	<p>
 		<span class="lang-en">Circuit</span>
@@ -42,11 +43,13 @@
 		<textarea id="circ-text" >1 2 u0 3, 2 3 r1 2, 3 1 i2 2, 3 1 r3 1</textarea><br>
 	</p>
 	<p>
-		<button id="calc" style="margin: auto;">Делаем</button>
+		<button id="calc" style="margin: auto;">
+			<span class="lang-en">Let's go</span>
+			<span class="lang-ru">Погнали</span>
+		</button>
 	</p>
-	<br>
-	<p id="ec-errstr" style="display: none;">
-		<em>Ошибка при вводе значений</em>
+	<p>
+		<em id="calc-error"></em>
 	</p>
 	<hr>
 	<p>
@@ -55,11 +58,69 @@
 
 <script>
 	var calcButton = document.getElementById("calc");
+	var errorField = document.getElementById("calc-error");
+	var circTextElement = document.getElementById("circ-text");
+
+	function CalcError(lang, errorMsg) {
+		if (lang === GetLangCode())
+			return;
+		errorField.textContent = errorMsg;
+	}
+
 	calcButton.addEventListener('click', () => {
-		var circText = document.getElementById("circ-text").textContent;
-		circ = circText.split(',')
-		//for (var i = 0; i <
+		var circText = circTextElement.value;
+		circ = circText.split(',');
+		var _nodeNames = [];
+		var elNames = [];
+		for (var i = 0; i < circ.length; i++) {
+			// Disection
+			circ[i] = circ[i].trim().split(' ');
+			if (circ[i].length != 4) {
+				CalcError("en", ""+circ[i].length+" arguments for element "+circ[i]+" (expected 4).");
+				CalcError("ru", ""+circ[i].length+" аргумент(ов) для элемента "+circ[i]+" (ожидалось 4).");
+				return 1;
+			}
+			// Node names
+			_nodeNames.push(circ[i][0]);
+			_nodeNames.push(circ[i][1]);
+			// Element names
+			elNames.push(circ[i][2].substring(1));
+			circ[i][2] = circ[i][2][0];
+			// Value check
+			const eVal = parseFloat(circ[i][3]);
+			if (isNaN(eVal)) {
+				CalcError("en", "Error value for element "+circ[i]+" ("+circ[i][3]+")?");
+				CalcError("ru", "Ошибочное значение для элемента "+circ[i]+" ("+circ[i][3]+")?");
+				return 1;
+			}
+			circ[i][3] = eVal;
+
+		}
+		// Unique name check
+		for (var i = 0; i < elNames.length; i++) {
+			if (elNames.indexOf(elNames[i]) != i) {
+				CalcError("en", "Name for element "+circ[i][2]+""+elNames[i]+" is not unique");
+				CalcError("ru", "Имя для элемента "+circ[i][2]+""+elNames[i]+" не уникально");
+				return 1;
+			}
+		}
+		// Node indexes in circ array
+		_nodeNames.sort();
+		var nodeNames = [];
+		for (var i = 0; i < _nodeNames.length; i++) {
+			if (i == _nodeNames.length-1 || _nodeNames[i] != _nodeNames[i+1])
+				nodeNames.push(_nodeNames[i]);
+		}
+		for (var i = 0; i < circ.length; i++) {
+			circ[i][0] = nodeNames.indexOf(circ[i][0]);
+			circ[i][1] = nodeNames.indexOf(circ[i][1]);
+		}
+		console.log(circ);
 	});
+	const beforeUnloadHandler = (event) => {
+		event.preventDefault();
+		event.returnValue = true;
+	};
 	window.addEventListener("beforeunload", beforeUnloadHandler);
 </script>
 			</div>
