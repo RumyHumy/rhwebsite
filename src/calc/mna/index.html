@@ -62,9 +62,8 @@
 	var circTextElement = document.getElementById("circ-text");
 
 	function CalcError(lang, errorMsg) {
-		if (lang === GetLangCode())
-			return;
-		errorField.textContent = errorMsg;
+		var lang = GetLangCode();
+		errorField.innerHTML += "<span class=\"lang-"+lang+"\">"+errorMsg+"</span>\n";
 	}
 
 	calcButton.addEventListener('click', () => {
@@ -76,6 +75,7 @@
 			// Disection
 			circ[i] = circ[i].trim().split(' ');
 			if (circ[i].length != 4) {
+				errorField.innerHTML = "";
 				CalcError("en", ""+circ[i].length+" arguments for element "+circ[i]+" (expected 4).");
 				CalcError("ru", ""+circ[i].length+" аргумент(ов) для элемента "+circ[i]+" (ожидалось 4).");
 				return 1;
@@ -116,6 +116,7 @@
 			circ[i][1] = nodeNames.indexOf(circ[i][1]);
 		}
 		console.log(circ);
+		//
 	});
 	const beforeUnloadHandler = (event) => {
 		event.preventDefault();

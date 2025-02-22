@@ -45,9 +45,8 @@
 	var circTextElement = document.getElementById("circ-text");
 
 	function CalcError(lang, errorMsg) {
-		if (lang === GetLangCode())
-			return;
-		errorField.textContent = errorMsg;
+		var lang = GetLangCode();
+		errorField.innerHTML += "<span class=\"lang-"+lang+"\">"+errorMsg+"</span>\n";
 	}
 
 	calcButton.addEventListener('click', () => {
@@ -59,8 +58,10 @@
 			// Disection
 			circ[i] = circ[i].trim().split(' ');
 			if (circ[i].length != 4) {
+				errorField.innerHTML = "";
 				CalcError("en", ""+circ[i].length+" arguments for element "+circ[i]+" (expected 4).");
 				CalcError("ru", ""+circ[i].length+" аргумент(ов) для элемента "+circ[i]+" (ожидалось 4).");
+				SetLang();
 				return 1;
 			}
 			// Node names
@@ -72,8 +73,10 @@
 			// Value check
 			const eVal = parseFloat(circ[i][3]);
 			if (isNaN(eVal)) {
+				errorField.innerHTML = "";
 				CalcError("en", "Error value for element "+circ[i]+" ("+circ[i][3]+")?");
 				CalcError("ru", "Ошибочное значение для элемента "+circ[i]+" ("+circ[i][3]+")?");
+				SetLang();
 				return 1;
 			}
 			circ[i][3] = eVal;
@@ -82,8 +85,10 @@
 		// Unique name check
 		for (var i = 0; i < elNames.length; i++) {
 			if (elNames.indexOf(elNames[i]) != i) {
+				errorField.innerHTML = "";
 				CalcError("en", "Name for element "+circ[i][2]+""+elNames[i]+" is not unique");
 				CalcError("ru", "Имя для элемента "+circ[i][2]+""+elNames[i]+" не уникально");
+				SetLang();
 				return 1;
 			}
 		}
