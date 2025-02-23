@@ -48,23 +48,53 @@
 			<span class="lang-ru">Погнали</span>
 		</button>
 	</p>
-	<p>
-		<em id="calc-error"></em>
+	<p id="error-messages">
+		<em id="emsg-args" style="display: none;">
+			<span class="lang-en">{0} arguments for element {1} (expected 4).</span>
+			<span class="lang-ru">{0} аргумент(ов) для элемента {1} (ожидалось 4).</span>
+		</em>
+		<em id="emsg-value-parsing" style="display: none;">
+			<span class="lang-en">Cannot read value for element {0} ({1})?"</span>
+			<span class="lang-ru">Невозможно прочитать значение элемента {0} ({1})?</span>
+		</em>
+		<em id="emsg-unique" style="display: none;">
+			<span class="lang-en">Name for element {0}{1} is not unique</span>
+			<span class="lang-ru">Имя для элемента {0}{1} не уникально</span>
+		</em>
 	</p>
 	<hr>
 	<p>
 	</p>
 </div>
 
+<script src="/scripts/mathjs/math.js"></script>
 <script>
 	var calcButton = document.getElementById("calc");
-	var errorField = document.getElementById("calc-error");
 	var circTextElement = document.getElementById("circ-text");
+	var errorMessages = document.getElementById("error-messages");
 
-	function CalcError(lang, errorMsg) {
-		var lang = GetLangCode();
-		errorField.innerHTML += "<span class=\"lang-"+lang+"\">"+errorMsg+"</span>\n";
+	function CALC_ERROR(errorMsgId, args) {
+		for (let i = 0; i < errorMessages.children.length; i++)
+			errorMessages.children[i].style.display = 'none';
+		var el = document.getElementById(errorMsgId);
+		el.style.display = 'inline';
+		for (var i = 0; i < args.length; i++) {
+			el.innerHTML = el.innerHTML.replace("{"+i+"}", args[i]);
+		}
+		console.log(el);
+		return 1;
 	}
+
+	function LinearSolve(A, B) {
+		try {
+			return math.transpose(math.lusolve(math.matrix(A), math.matrix(B))).valueOf();
+		} catch (error) {
+			console.log(error);
+		}
+	}
+	A = [[1, 2], [1, 0]];
+	B = [-1, 2];
+	alert(LinearSolve(A, B));
 
 	calcButton.addEventListener('click', () => {
 		var circText = circTextElement.value;
@@ -74,12 +104,8 @@
 		for (var i = 0; i < circ.length; i++) {
 			// Disection
 			circ[i] = circ[i].trim().split(' ');
-			if (circ[i].length != 4) {
-				errorField.innerHTML = "";
-				CalcError("en", ""+circ[i].length+" arguments for element "+circ[i]+" (expected 4).");
-				CalcError("ru", ""+circ[i].length+" аргумент(ов) для элемента "+circ[i]+" (ожидалось 4).");
-				return 1;
-			}
+			if (circ[i].length != 4)
+				return CALC_ERROR("emsg-args", [circ[i].length, i+1]);
 			// Node names
 			_nodeNames.push(circ[i][0]);
 			_nodeNames.push(circ[i][1]);
@@ -88,21 +114,15 @@
 			circ[i][2] = circ[i][2][0];
 			// Value check
 			const eVal = parseFloat(circ[i][3]);
-			if (isNaN(eVal)) {
-				CalcError("en", "Error value for element "+circ[i]+" ("+circ[i][3]+")?");
-				CalcError("ru", "Ошибочное значение для элемента "+circ[i]+" ("+circ[i][3]+")?");
-				return 1;
-			}
+			if (isNaN(eVal))
+				return CALC_ERROR("emsg-value-parsing", [i+1, circ[i][3]]);
 			circ[i][3] = eVal;
 
 		}
 		// Unique name check
 		for (var i = 0; i < elNames.length; i++) {
-			if (elNames.indexOf(elNames[i]) != i) {
-				CalcError("en", "Name for element "+circ[i][2]+""+elNames[i]+" is not unique");
-				CalcError("ru", "Имя для элемента "+circ[i][2]+""+elNames[i]+" не уникально");
-				return 1;
-			}
+			if (elNames.lastIndexOf(elNames[i]) != i)
+				return CALC_ERROR("emsg-unique", [circ[i][2], elNames[i]]);
 		}
 		// Node indexes in circ array
 		_nodeNames.sort();
@@ -115,7 +135,6 @@
 			circ[i][0] = nodeNames.indexOf(circ[i][0]);
 			circ[i][1] = nodeNames.indexOf(circ[i][1]);
 		}
-		console.log(circ);
 		//
 	});
 	const beforeUnloadHandler = (event) => {

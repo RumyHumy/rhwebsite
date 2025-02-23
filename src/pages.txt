@@ -1,7 +1,7 @@
-/about
 /calc
 /calc/error
 /calc/mna
+/about
 /music
 /programming
 /programming/school-days

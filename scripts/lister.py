@@ -13,6 +13,6 @@ if __name__ == '__main__':
         if 'index.html' in files:
             print(root)
             urilist += root[5:]+'\n'
-    f = open(f'{DIR}/static_data/listed-pages-all.txt', 'w', encoding='utf-8')
+    f = open(f'{DIR}/pages.txt', 'w', encoding='utf-8')
     f.write(urilist.strip())
     f.close()

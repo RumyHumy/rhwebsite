@@ -24,10 +24,6 @@
 		<span class="lang-en">🧮<br>Calculators</span>
 		<span class="lang-ru">🧮<br>Калькуляторы</span>
 	</a>
-	<!--<a href="/programming">
-		<span class="lang-en">⌨️<br>Coding</span>
-		<span class="lang-ru">⌨️<br>Прогинг</span>
-	</a>-->
 	<!--<a href="/art">
 		<span class="lang-en">🎨<br>Art</span>
 		<span class="lang-ru">🎨<br>Творчество</span>
@@ -36,46 +32,34 @@
 		<span class="lang-en">🎶<br>Music</span>
 		<span class="lang-ru">🎶<br>Музыка</span>
 	</a>
-	<a href="#" onclick="GotoRandomPage();">
+	<a id="random-page" href="#">
 		<span class="lang-en">❓<br>Random page</span>
 		<span class="lang-ru">❓<br>Случайная страница</span>
 	</a>
 </div>
-<div id="splashes" style="display: none;">
-<span class="lang-en">Ego death 24/7</span><span class="lang-ru">Ego death 24/7</span>
-<span class="lang-en">Have a good day</span><span class="lang-ru">Хорошего денёчка</span>
-<span class="lang-en">You look awsome</span><span class="lang-ru">Классно выглядишь</span>
-<span>You look lonely, I can fix that...</span>
-<span>grad F = J/e0</span>
-<span class="lang-en">Think deeper</span><span class="lang-ru">Вдумывайся</span>
-</div>
 <script>
-	var pagearr;
-	var splasharr;
+	var pages = null;
+	var splashes = null;
+	var page = null;
+	var splash = null;
 	function getRandomInt(max) {
 		return Math.floor(Math.random()*max);
 	}
-	function ParseLines(str) {
-		str = str.trim();
-		while (str.indexOf("\r") >= 0)
-			str = str.replace("\r", "");
-		return str.split("\n");
+	async function LoadStaticData() {
+		pages = (await FetchText('/pages.txt')).trim().split('\n');
+		splashes = (await FetchText('/splashes.txt')).trim().split('\n');
+
+		splash = splashes[getRandomInt(splashes.length)];
+		page = pages[getRandomInt(pages.length)];
+
+		document.getElementById("home-splash").innerHTML = splash;
+
+		SetLang();
 	}
-	function LoadPage() {
-		var oFrame = document.getElementById("framePageFile");
-		pagearr = ParseLines(oFrame.contentWindow.document.body.childNodes[0].innerHTML);
-	}
-	function LoadSplash() {
-		splasharr = ParseLines(document.getElementById("splashes").innerHTML);
-		if (splasharr && splasharr.length > 0) {
-			var randtext = splasharr[getRandomInt(splasharr.length)];
-			document.getElementById("home-splash").innerHTML = randtext;
-		}
-	}
-	function GotoRandomPage() {
-		if (pagearr && pagearr.length > 0)
-			window.location.href = pagearr[getRandomInt(pagearr.length)];
-	}
-	LoadSplash();
+	document.getElementById('random-page').addEventListener('click', async function(event) {
+		event.preventDefault();
+		if (page !== null)
+			window.location.href = page;
+	});
+	LoadStaticData();
 </script>
-<iframe id="framePageFile" src="/static_data/listed-pages-all.txt" onload="LoadPage();" style="display: none;"></iframe>
