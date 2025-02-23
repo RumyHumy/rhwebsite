@@ -31,18 +31,8 @@
 			<span class="lang-ru">Погнали</span>
 		</button>
 	</p>
-	<p id="error-messages">
-		<em id="emsg-args" style="display: none;">
-			<span class="lang-en">{0} arguments for element {1} (expected 4).</span>
-			<span class="lang-ru">{0} аргумент(ов) для элемента {1} (ожидалось 4).</span>
-		</em>
-		<em id="emsg-value-parsing" style="display: none;">
-			<span class="lang-en">Cannot read value for element {0} ({1})?"</span>
-			<span class="lang-ru">Невозможно прочитать значение элемента {0} ({1})?</span>
-		</em>
-		<em id="emsg-unique" style="display: none;">
-			<span class="lang-en">Name for element {0}{1} is not unique</span>
-			<span class="lang-ru">Имя для элемента {0}{1} не уникально</span>
+	<p>
+		<em id="error-field">
 		</em>
 	</p>
 	<hr>
@@ -52,19 +42,23 @@
 
 <script src="/scripts/mathjs/math.js"></script>
 <script>
+	errors = {
+		'emsg-empty': '<span class="lang-en">Empty input field</span><span class="lang-ru">Пустое поле ввода</span>',
+		'emsg-args': '<span class="lang-en">{0} arguments for element {1} (expected 4)</span><span class="lang-ru">{0} аргумент(ов) для элемента {1} (ожидалось 4)</span>',
+		'emsg-value-parsing': '<span class="lang-en">Cannot read value for element {0} ({1})?"</span><span class="lang-ru">Невозможно прочитать значение элемента {0} ({1})?</span>',
+		'emsg-unique': '<span class="lang-en">Name for element {0}{1} is not unique</span><span class="lang-ru">Имя для элемента {0}{1} не уникально</span>'
+	}
 	var calcButton = document.getElementById("calc");
 	var circTextElement = document.getElementById("circ-text");
-	var errorMessages = document.getElementById("error-messages");
+	var errorField = document.getElementById("error-field");
 
 	function CALC_ERROR(errorMsgId, args) {
-		for (let i = 0; i < errorMessages.children.length; i++)
-			errorMessages.children[i].style.display = 'none';
-		var el = document.getElementById(errorMsgId);
-		el.style.display = 'inline';
+		var text = errors[errorMsgId];
 		for (var i = 0; i < args.length; i++) {
-			el.innerHTML = el.innerHTML.replace("{"+i+"}", args[i]);
+			text = text.replaceAll("{"+i+"}", args[i]);
 		}
-		console.log(el);
+		errorField.innerHTML = text;
+		SetLang();
 		return 1;
 	}
 
@@ -80,7 +74,9 @@
 	//alert(LinearSolve(A, B));
 
 	calcButton.addEventListener('click', () => {
-		var circText = circTextElement.value;
+		if (!circTextElement.value.trim())
+			return CALC_ERROR("emsg-empty", []);
+		var circText = circTextElement.value.trim();
 		circ = circText.split(',');
 		var _nodeNames = [];
 		var elNames = [];
