@@ -17,8 +17,8 @@
 
 <div id="calc-field">
 	<p>
-		<span class="lang-en">Enter circuit information in this format <i>[node1] [node2] [type_name] [value]</i> for each element separated by ",".</span>
-		<span class="lang-ru">Введите цепь в формате <i>[узел1] [узел2] [тип_имя] [значение]</i> для каждого элемента через ",".</span>
+	<span class="lang-en">Enter circuit information in this format <i>[node1] [node2] [type_name] [value]</i> for each element separated by ",". Possible element types: <b>u (voltage source)</b>, <b>i (current source)</b>, <b>r (resistor)</b>. Polarity: u - node1-, node2+; i - node1-, node2+; r - node1+, node2-. Each element must have name (or index).</span>
+		<span class="lang-ru">Введите цепь в формате <i>[узел1] [узел2] [тип_имя] [значение]</i> для каждого элемента через ",". Возможные типы элементов: <b>u (источник напряжения)</b>, <b>i (источник тока)</b>, <b>r (резистивный элемент)</b>. Полярность: u - узел1-, узел2+; i - узел1-, узел2+; r - узел1+, узел2-. У каждого элемента должно быть имя (либо номер).</span>
 	</p>
 	<p>
 		<span class="lang-en">Circuit</span>
@@ -36,8 +36,20 @@
 	</p>
 	<hr>
 	<p>
+		<span class="lang-en">System of equations:</span>
+		<span class="lang-ru">Система уравнений:</span>
+		<br>
 		<em id="system-field"></em>
+		<br>
+		<span class="lang-en">Answers:</span>
+		<span class="lang-ru">Ответы:</span>
+		<br>
 		<em id="answer-field"></em>
+		<br>
+		<span class="lang-en">Currents and voltages:</span>
+		<span class="lang-ru">Токи и напряжения:</span>
+		<br>
+		<em id="cv-field"></em>
 	</p>
 </div>
 
@@ -56,6 +68,7 @@
 	var errorField = document.getElementById("error-field");
 	var systemField = document.getElementById("system-field");
 	var answerField = document.getElementById("answer-field");
+	var cvField = document.getElementById("cv-field");
 
 	function CALC_ERROR(errorMsgId, args) {
 		var text = errors[errorMsgId];
@@ -68,6 +81,7 @@
 	}
 
 	calcButton.addEventListener('click', () => {
+		errorField.innerHTML = "";
 		if (!circTextElement.value.trim())
 			return CALC_ERROR("emsg-empty", []);
 		var circText = circTextElement.value.trim();
@@ -87,7 +101,6 @@
 			// Element names
 			elNames.push(circ[i][2].substring(1));
 			circ[i][2] = circ[i][2][0].toUpperCase();
-			// TODO: check type
 			if (circ[i][2] == 'U') {
 				vsrcCount += 1;
 			} else if (circ[i][2] != 'R' && circ[i][2] != 'I') {
@@ -117,12 +130,16 @@
 			circ[i][1] = nodeNames.indexOf(circ[i][1]);
 		}
 		nodeCount = nodeNames.length;
-		// Constructing matricies
-		var size = nodeCount+vsrcCount;
-		var A = new Array(size);
-		var b = new Array(size).fill(0);
-		for (var i = 0; i < size; i++)
-			A[i] = new Array(size).fill(0);
+		// S O L V E
+		var msize = nodeCount+vsrcCount;
+		var A = new Array(msize);
+		var b = new Array(msize).fill(0);
+		var Asys = new Array(msize);
+		var bsys = new Array(msize).fill("");
+		for (var i = 0; i < msize; i++) {
+			A[i] = new Array(msize).fill(0);
+			Asys[i] = new Array(msize).fill("");
+		}
 		var vsrcs = [];
 		for (var i = 0; i < circ.length; i++) {
 			var n1 = circ[i][0];
@@ -134,24 +151,39 @@
 				A[n2][n2] += 1/v;
 				A[n1][n2] -= 1/v;
 				A[n2][n1] -= 1/v;
+				Asys[n1][n1] += '+G'+elNames[i];
+				Asys[n2][n2] += '+G'+elNames[i];
+				Asys[n1][n2] += '-G'+elNames[i];
+				Asys[n2][n1] += '-G'+elNames[i];
 			} else if (circ[i][2] == 'I') {
 				b[n1] = -v;
 				b[n2] = +v;
+				bsys[n1] = "-i"+elNames[i];
+				bsys[n2] = "+i"+elNames[i];
 			} else if (circ[i][2] == 'U') {
 				var j = nodeCount+vsrcs.length;
 				A[n1][j] = -1;
-				A[j][n1] = -1;
 				A[n2][j] = +1;
+				A[j][n1] = -1;
 				A[j][n2] = +1;
 				b[j] = v;
+				Asys[n1][j] = " - i"+elNames[i];
+				Asys[n2][j] = " + i"+elNames[i];
+				Asys[j][n1] = " - φ"+nodeNames[n1];
+				Asys[j][n2] = " + φ"+nodeNames[n2];
+				bsys[j] = "-u"+elNames[i];
 				vsrcs.push(i);
 			}
 		}
 		b.splice(nodeCount-1, 1);
 		A.splice(nodeCount-1, 1);
+		bsys.splice(nodeCount-1, 1);
+		Asys.splice(nodeCount-1, 1);
 		for (var i = 0; i < A.length; i++) {
 			A[i].splice(nodeCount-1, 1);
+			Asys[i].splice(nodeCount-1, 1);
 		}
+		// S O L V E
 		var sol = null;
 		try {
 			sol = math.lusolve(math.matrix(A), math.matrix(b));
@@ -161,21 +193,52 @@
 		sol = sol.toArray();
 		answerField.innerHTML = "";
 		for (var i = 0; i < nodeCount-1; i++) {
-			answerField.innerHTML += "φ"+nodeNames[i]+" = "+sol[i][0]+"<br>";
+			answerField.innerHTML += "φ"+nodeNames[i]+" = "+sol[i][0].toFixed(7)+"<br>";
 		}
 		answerField.innerHTML += "φ"+nodeNames[nodeNames.length-1]+" = 0<br>";
 		for (var i = 0; i < vsrcs.length; i++) {
-			answerField.innerHTML += "i"+elNames[vsrcs[i]]+" = "+sol[nodeCount+i-1][0]+"<br>";
+			answerField.innerHTML += "i"+elNames[vsrcs[i]]+" = "+(-sol[nodeCount+i-1][0].toFixed(7))+"<br>";
 		}
 		systemField.innerHTML = "";
-		for (var r = 0; r < size; r++) {
-			for (var c = 0; c < size; c++) {
-				if (A[r][c] == 0)
+		for (var r = 0; r < msize-1; r++) {
+			var plus_flag = false;
+			for (var c = 0; c < msize-1; c++) {
+				if (Asys[r][c].length == 0)
 					continue;
-				if (c < nodeCount)
-				systemField.innerHTML += "φ"+nodeNames[];
+				if (r < nodeCount-1 && c < nodeCount-1) {
+					if (plus_flag)
+						systemField.innerHTML += " + ";
+					systemField.innerHTML += "φ"+nodeNames[c]+"*("+Asys[r][c]+")";
+				} else if (r < nodeCount-1) {
+					systemField.innerHTML += Asys[r][c];
+				} else if (c < nodeCount-1) {
+					systemField.innerHTML += Asys[r][c].substring((+!(plus_flag || Asys[r][c][1] == '-'))*3);
+				}
+				plus_flag = true;
 			}
-			systemField.innerHTML += ".<br>";
+			systemField.innerHTML += " = "+(bsys[r].length ? bsys[r] : "0")+"<br>";
+		}
+		cvField.innerHTML = "";
+		for (var i = 0; i < circ.length; i++) {
+			var p1 = (circ[i][0] == nodeCount-1 ? 0 : sol[circ[i][0]]);
+			var p2 = (circ[i][1] == nodeCount-1 ? 0 : sol[circ[i][1]]);
+			var U = p2-p1;
+			var I = null;
+			var R = null;
+			if (circ[i][2] == 'R') {
+				U = -U
+				R = +circ[i][3];
+				I = U/R;
+			} else if (circ[i][2] == 'I') {
+				I = +circ[i][3];
+				R = U/I;
+			} else {
+				I = -sol[nodeCount-1+vsrcs.indexOf(i)];
+				R = U/I;
+			}
+			cvField.innerHTML += 'u'+elNames[i]+" = "+U.toFixed(7)+", ";
+			cvField.innerHTML += 'i'+elNames[i]+" = "+I.toFixed(7)+", ";
+			cvField.innerHTML += 'R'+elNames[i]+" = "+R.toFixed(7)+"<br>";
 		}
 	});
 	const beforeUnloadHandler = (event) => {
