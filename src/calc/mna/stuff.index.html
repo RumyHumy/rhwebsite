@@ -32,11 +32,12 @@
 		</button>
 	</p>
 	<p>
-		<em id="error-field">
-		</em>
+		<em id="error-field"></em>
 	</p>
 	<hr>
 	<p>
+		<em id="system-field"></em>
+		<em id="answer-field"></em>
 	</p>
 </div>
 
@@ -46,11 +47,15 @@
 		'emsg-empty': '<span class="lang-en">Empty input field</span><span class="lang-ru">Пустое поле ввода</span>',
 		'emsg-args': '<span class="lang-en">{0} arguments for element {1} (expected 4)</span><span class="lang-ru">{0} аргумент(ов) для элемента {1} (ожидалось 4)</span>',
 		'emsg-value-parsing': '<span class="lang-en">Cannot read value for element {0} ({1})?"</span><span class="lang-ru">Невозможно прочитать значение элемента {0} ({1})?</span>',
-		'emsg-unique': '<span class="lang-en">Name for element {0}{1} is not unique</span><span class="lang-ru">Имя для элемента {0}{1} не уникально</span>'
+		'emsg-unique': '<span class="lang-en">Name for element {0}{1} is not unique</span><span class="lang-ru">Имя для элемента {0}{1} не уникально</span>',
+		'emsg-ill-formed': '<span class="lang-en">Not a single solution</span><span class="lang-ru">Нет одного решения</span>',
+		'emsg-type': '<span class="lang-en">Invalid type in element {0}</span><span class="lang-ru">Неправильный тип в элементе {0}</span>',
 	}
 	var calcButton = document.getElementById("calc");
 	var circTextElement = document.getElementById("circ-text");
 	var errorField = document.getElementById("error-field");
+	var systemField = document.getElementById("system-field");
+	var answerField = document.getElementById("answer-field");
 
 	function CALC_ERROR(errorMsgId, args) {
 		var text = errors[errorMsgId];
@@ -62,17 +67,6 @@
 		return 1;
 	}
 
-	function LinearSolve(A, B) {
-		try {
-			return math.transpose(math.lusolve(math.matrix(A), math.matrix(B))).valueOf();
-		} catch (error) {
-			console.log(error);
-		}
-	}
-	//A = [[1, 2], [1, 0]];
-	//B = [-1, 2];
-	//alert(LinearSolve(A, B));
-
 	calcButton.addEventListener('click', () => {
 		if (!circTextElement.value.trim())
 			return CALC_ERROR("emsg-empty", []);
@@ -80,6 +74,8 @@
 		circ = circText.split(',');
 		var _nodeNames = [];
 		var elNames = [];
+		var vsrcCount = 0;
+		var nodeCount = 0;
 		for (var i = 0; i < circ.length; i++) {
 			// Disection
 			circ[i] = circ[i].trim().split(' ');
@@ -90,7 +86,13 @@
 			_nodeNames.push(circ[i][1]);
 			// Element names
 			elNames.push(circ[i][2].substring(1));
-			circ[i][2] = circ[i][2][0];
+			circ[i][2] = circ[i][2][0].toUpperCase();
+			// TODO: check type
+			if (circ[i][2] == 'U') {
+				vsrcCount += 1;
+			} else if (circ[i][2] != 'R' && circ[i][2] != 'I') {
+				return CALC_ERROR("emsg-type", [i+1]);
+			}
 			// Value check
 			const eVal = parseFloat(circ[i][3]);
 			if (isNaN(eVal))
@@ -114,7 +116,67 @@
 			circ[i][0] = nodeNames.indexOf(circ[i][0]);
 			circ[i][1] = nodeNames.indexOf(circ[i][1]);
 		}
-		//
+		nodeCount = nodeNames.length;
+		// Constructing matricies
+		var size = nodeCount+vsrcCount;
+		var A = new Array(size);
+		var b = new Array(size).fill(0);
+		for (var i = 0; i < size; i++)
+			A[i] = new Array(size).fill(0);
+		var vsrcs = [];
+		for (var i = 0; i < circ.length; i++) {
+			var n1 = circ[i][0];
+			var n2 = circ[i][1];
+			var t = circ[i][2];
+			var v = circ[i][3];
+			if (circ[i][2] == 'R') {
+				A[n1][n1] += 1/v;
+				A[n2][n2] += 1/v;
+				A[n1][n2] -= 1/v;
+				A[n2][n1] -= 1/v;
+			} else if (circ[i][2] == 'I') {
+				b[n1] = -v;
+				b[n2] = +v;
+			} else if (circ[i][2] == 'U') {
+				var j = nodeCount+vsrcs.length;
+				A[n1][j] = -1;
+				A[j][n1] = -1;
+				A[n2][j] = +1;
+				A[j][n2] = +1;
+				b[j] = v;
+				vsrcs.push(i);
+			}
+		}
+		b.splice(nodeCount-1, 1);
+		A.splice(nodeCount-1, 1);
+		for (var i = 0; i < A.length; i++) {
+			A[i].splice(nodeCount-1, 1);
+		}
+		var sol = null;
+		try {
+			sol = math.lusolve(math.matrix(A), math.matrix(b));
+		} catch (error) {
+			return CALC_ERROR("emsg-ill-formed", []);
+		}
+		sol = sol.toArray();
+		answerField.innerHTML = "";
+		for (var i = 0; i < nodeCount-1; i++) {
+			answerField.innerHTML += "φ"+nodeNames[i]+" = "+sol[i][0]+"<br>";
+		}
+		answerField.innerHTML += "φ"+nodeNames[nodeNames.length-1]+" = 0<br>";
+		for (var i = 0; i < vsrcs.length; i++) {
+			answerField.innerHTML += "i"+elNames[vsrcs[i]]+" = "+sol[nodeCount+i-1][0]+"<br>";
+		}
+		systemField.innerHTML = "";
+		for (var r = 0; r < size; r++) {
+			for (var c = 0; c < size; c++) {
+				if (A[r][c] == 0)
+					continue;
+				if (c < nodeCount)
+				systemField.innerHTML += "φ"+nodeNames[];
+			}
+			systemField.innerHTML += ".<br>";
+		}
 	});
 	const beforeUnloadHandler = (event) => {
 		event.preventDefault();
