@@ -1,8 +1,16 @@
 #!/bin/bash
 
-set -x
-
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite folder"; exit 1; }
+
+if [ "$1" != "-test" ] && [ "$1" != "-prod" ] && [ "$1" != "-media" ]; then
+	echo "./run.sh -test/-prod/-media"
+	echo "-test - runs baker"
+	echo "-prod - expecting that pages are baked"
+	echo "-media - media server"
+	exit 1
+fi
+
+#set -x
 
 [ $? != 0 ] && exit 1
 
@@ -31,7 +39,7 @@ port="8080"
 ssl_port="8443"
 ssl_crt_path="$etc_dir/fakessl/fake.crt"
 ssl_key_path="$etc_dir/fakessl/fake.key"
-if [ "$1" = "prod" ]; then
+if [ "$1" = "-prod" ]; then
 	server_names="rumyhumy.ru"
 	https_redirect="https://rumyhumy.ru"
 	port="80"
@@ -78,13 +86,10 @@ $sudo cp ./nginx/nginx.conf "$nginx_dir/nginx.conf"
 $sudo cp ./nginx/rumyhumyorg.conf "$nginx_dir/conf.d/rumyhumyorg.conf"
 
 # S T A R T U P
-
+echo "[run.sh] Baking static content..."
+./baker/baker.sh
 echo "[run.sh] Les go..."
 echo "[run.sh] Preparing SSL certificate & key..."
-echo "[run.sh] Baking tasty pages..."
-./scripts/baker.py
-echo "[run.sh] Listing pages..."
-./scripts/lister.py
 echo "[run.sh] Here comes the NGINX..."
 $sudo nginx -s quit
 sleep 1
