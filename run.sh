@@ -2,7 +2,7 @@
 
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite folder"; exit 1; }
 
-if [ "$1" != "-test" ] && [ "$1" != "-prod" ] && [ "$1" != "-media" ]; then
+if [ "$1" != "-test" ] && [ "$1" != "-prod" ]; then
 	echo "./run.sh -test/-prod/-media"
 	echo "-test - runs baker"
 	echo "-prod - expecting that pages are baked"
@@ -33,12 +33,6 @@ fi
 
 # P R O D / T E S T   M O D E S
 
-server_names="localhost"
-https_redirect="https://localhost:8443"
-port="8080"
-ssl_port="8443"
-ssl_crt_path="$etc_dir/fakessl/fake.crt"
-ssl_key_path="$etc_dir/fakessl/fake.key"
 if [ "$1" = "-prod" ]; then
 	server_names="rumyhumy.ru"
 	https_redirect="https://rumyhumy.ru"
@@ -54,7 +48,15 @@ if [ "$1" = "-prod" ]; then
 		read -n 1 -s -r input
 		$sudo crontab -e
 	fi
-else
+fi
+
+if [ "$1" = "-test" ]; then
+	server_names="localhost"
+	https_redirect="https://localhost:8443"
+	port="8080"
+	ssl_port="8443"
+	ssl_crt_path="$etc_dir/fakessl/fake.crt"
+	ssl_key_path="$etc_dir/fakessl/fake.key"
 	if [ ! -d "$etc_dir/fakessl" ]; then
 		$sudo mkdir $etc_dir/fakessl
 		$sudo openssl genrsa -out $etc_dir/fakessl/fake.key 2048
@@ -86,8 +88,10 @@ $sudo cp ./nginx/nginx.conf "$nginx_dir/nginx.conf"
 $sudo cp ./nginx/rumyhumyorg.conf "$nginx_dir/conf.d/rumyhumyorg.conf"
 
 # S T A R T U P
+
 echo "[run.sh] Baking static content..."
 ./baker/baker.sh
+
 echo "[run.sh] Les go..."
 echo "[run.sh] Preparing SSL certificate & key..."
 echo "[run.sh] Here comes the NGINX..."
