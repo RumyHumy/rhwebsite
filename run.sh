@@ -34,8 +34,6 @@ if [ "$all_present" = "0" ]; then
 	exit 1
 fi
 
-exit 1
-
 # P L A T F O R M   D E P E N D E N C I E S
 
 echo "[run.sh/LOG] Setuping platform dependencies..."
