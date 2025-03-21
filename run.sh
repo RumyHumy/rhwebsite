@@ -107,6 +107,7 @@ $sudo cp ./nginx/nginx.conf "$nginx_dir/nginx.conf"
 $sudo cp ./nginx/rhstatic.conf "$nginx_dir/conf.d/rhstatic.conf"
 
 # S T A R T U P
+
 echo "[run.sh] Les go..."
 echo "[run.sh] Preparing SSL certificate & key..."
 echo "[run.sh] Here comes the NGINX..."
