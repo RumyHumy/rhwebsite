@@ -1,6 +1,6 @@
-/calc
-/calc/error
-/calc/mna
 /about
 /music
 /programming/school-days
+/calc
+/calc/mna
+/calc/error
