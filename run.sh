@@ -26,7 +26,7 @@ hascmd() {
 
 hascmd "nginx"
 hascmd "openssl"
-hascmd "crontab"
+[ "$1" != "-prod" ] || hascmd "crontab"
 [ "$1" != "-prod" ] || hascmd "certbot"
 
 if [ "$all_present" = "0" ]; then
