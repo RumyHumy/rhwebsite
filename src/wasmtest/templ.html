@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>My Emscripten App</title>
+</head>
+<body>
+    <!-- Canvas for rendering -->
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+
+    <!-- Link the canvas to the Emscripten module -->
+    <script type="text/javascript">
+        var Module = {
+            canvas: (function() { return document.getElementById('canvas'); })()
+        };
+    </script>
+
+    <!-- Placeholder for Emscripten-generated JS -->
+    {{{ SCRIPT }}}
+</body>
+</html>
