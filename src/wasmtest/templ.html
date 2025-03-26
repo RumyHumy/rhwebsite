@@ -13,6 +13,15 @@
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })()
         };
+		Module.canvas.width = window.innerWidth;
+		Module.canvas.height = window.innerHeight;
+		window.addEventListener("resize", () => {
+			Module.canvas.width = window.innerWidth;
+			Module.canvas.height = window.innerHeight;
+			var context = Module.canvas.getContect("2d");
+			ctx.fillStyle = "black";
+			ctx.fillRect(0, 0, Module.canvas.width, Module.canvas.width);
+		});
     </script>
 
     <!-- Placeholder for Emscripten-generated JS -->

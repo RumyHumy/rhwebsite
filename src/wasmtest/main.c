@@ -18,7 +18,7 @@ void main_loop(void) {
 
 int main(void) {
     InitWindow(800, 450, "Raylib Emscripten Example");
-    SetTargetFPS(60);
+    SetTargetFPS(120);
 
     // Set up the main loop with Emscripten
     emscripten_set_main_loop(main_loop, 0, 1);
