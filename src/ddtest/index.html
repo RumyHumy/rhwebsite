@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.jsdelivr.net/pyodide/v0.27.4/full/pyodide.js"></script>
+</head>
+<body>
+	<textarea id="code">
+import time
+for i in range(10):
+	print(f"vzlom pentagon {i/10*100}%")
+	time.sleep(1)
+	</textarea>
+	<br>
+	<button id="run">Run</button>
+	<br>
+	<p id="output"></p>
+</body>
+<script>
+async function main() {
+      let pyodide = await loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/",
+      });
+
+      console.log("Pyodide loaded!");
+
+      const runButton = document.getElementById("run");
+      const outputElement = document.getElementById("output");
+
+      runButton.addEventListener("click", async () => {
+        outputElement.textContent = ""; // Clear previous output
+
+        // Python code to run asynchronously with real-time output
+        const pythonCode = `
+import asyncio
+import sys
+import time
+
+for i in range(10):
+	print(f"Step {i+1}...")
+	sys.stdout.flush() # Important for real-time output in Pyodide
+	await asyncio.sleep(1)  # Simulate some work
+`;
+
+        // Function to append to the output element from Python
+        function js_append_to_output(text) {
+          outputElement.textContent += text;
+          outputElement.scrollTop = outputElement.scrollHeight; // Auto-scroll
+        }
+
+        // Make the append function accessible to Python
+        pyodide.globals.set("js_append_to_output", js_append_to_output);
+
+
+        runButton.disabled = true; // Disable the button while running
+
+        try {
+          await pyodide.runPythonAsync(pythonCode);
+        } catch (error) {
+          console.error("Error running Python code:", error);
+          outputElement.textContent += `\nError: ${error}`;
+        } finally {
+          runButton.disabled = false; // Re-enable the button
+        }
+      });
+    }
+
+    main();
+</script>
+</html>
