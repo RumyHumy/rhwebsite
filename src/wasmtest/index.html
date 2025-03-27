@@ -13,15 +13,6 @@
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })()
         };
-		Module.canvas.width = window.innerWidth;
-		Module.canvas.height = window.innerHeight;
-		window.addEventListener("resize", () => {
-			Module.canvas.width = window.innerWidth;
-			Module.canvas.height = window.innerHeight;
-			if (Module['SetWindowSize']) {
-				Module['SetWindowSize'](canvas.width, canvas.height);
-			}
-		});
     </script>
 
     <!-- Placeholder for Emscripten-generated JS -->
