@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Python Code Editor</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  pre { background-color: #f0f0f0; border: 1px solid #ccc; padding: 10px; }
+</style>
+</head>
+<body>
+
+<textarea id="codeEditor" rows="10" cols="50" oninput="updateCode()"></textarea>
+
+<pre><code class="language-python" id="codeDisplay"></code></pre>
+
+<script>
+function updateCode() {
+  const code = document.getElementById("codeEditor").value;
+  document.getElementById("codeDisplay").textContent = code;
+  hljs.highlightElement(document.getElementById("codeDisplay"));
+}
+</script>
+
+</body>
+</html>

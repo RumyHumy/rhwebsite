@@ -1,65 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pyodide in Web Worker</title>
+	<title>Pyodide in Web Worker</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+	body {
+		background-color: black;
+	}
+</style>
 </head>
 <body>
-  <textarea>RUN</textarea>
-  <div id="output"></div>
-  <script>
-    const outputDiv = document.getElementById('output');
-
-    const worker = new Worker(URL.createObjectURL(new Blob([`
-      importScripts("https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js");
-
-      async function loadPyodideAndPackages() {
-        self.pyodide = await loadPyodide({
-          stdout: (text) => { postMessage({ type: 'print', data: text }); },
-          stderr: (text) => { postMessage({ type: 'print', data: text }); },
-        });
-      }
-
-      let pyodideReadyPromise = loadPyodideAndPackages();
-
-      self.onmessage = async (event) => {
-        await pyodideReadyPromise;
-        const { python } = event.data;
-
-        try {
-          const result = await self.pyodide.runPythonAsync(python);
-          if (result !== undefined) {
-            postMessage({ type: 'result', data: result });
-          }
-        } catch (error) {
-          postMessage({ type: 'error', data: error.message });
-        }
-      };
-    `], { type: 'text/javascript' })));
-
-    worker.onmessage = (event) => {
-      const { type, data } = event.data;
-      switch (type) {
-        case 'print':
-          outputDiv.textContent += data;
-          break;
-        case 'result':
-          outputDiv.textContent += 'Result: ' + data;
-          break;
-        case 'error':
-          outputDiv.textContent = 'Error: ' + data;
-          break;
-      }
-    };
-
-    // Example usage
-    worker.postMessage({ python: `
-		import time
-		for i in range(5):
-			input()
-			print(i)
-			time.sleep(1)
-	` });
-  </script>
+	<textarea>RUN</textarea>
+	<div id="output"></div>
 </body>
+<script>
+const outputDiv = document.getElementById('output');
+
+const worker = new Worker(URL.createObjectURL(new Blob([`
+	importScripts("https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js");
+
+	async function loadPyodideAndPackages() {
+	self.pyodide = await loadPyodide({
+		stdout: (text) => { postMessage({ type: 'print', data: text }); },
+		stderr: (text) => { postMessage({ type: 'print', data: text }); },
+	});
+	}
+
+	let pyodideReadyPromise = loadPyodideAndPackages();
+
+	self.onmessage = async (event) => {
+	await pyodideReadyPromise;
+	const { python } = event.data;
+
+	try {
+		const result = await self.pyodide.runPythonAsync(python);
+		if (result !== undefined) {
+		postMessage({ type: 'result', data: result });
+		}
+	} catch (error) {
+		postMessage({ type: 'error', data: error.message });
+	}
+	};
+`], { type: 'text/javascript' })));
+
+worker.onmessage = (event) => {
+	const { type, data } = event.data;
+	switch (type) {
+	case 'print':
+		outputDiv.textContent += data;
+		break;
+	case 'result':
+		outputDiv.textContent += 'Result: ' + data;
+		break;
+	case 'error':
+		outputDiv.textContent = 'Error: ' + data;
+		break;
+	}
+};
+
+// Example usage
+worker.postMessage({ python: `
+	import time
+	for i in range(5):
+		print(i)
+		time.sleep(1)
+` });
+</script>
 </html>
 
