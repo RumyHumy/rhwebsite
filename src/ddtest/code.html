@@ -1,27 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Python Code Editor</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
-<style>
-  pre { background-color: #f0f0f0; border: 1px solid #ccc; padding: 10px; }
-</style>
+  <meta charset="UTF-8">
+  <title>CodeMirror Python Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+  <style>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    .CodeMirror { height: 100%; }
+  </style>
 </head>
 <body>
-
-<textarea id="codeEditor" rows="10" cols="50" oninput="updateCode()"></textarea>
-
-<pre><code class="language-python" id="codeDisplay"></code></pre>
-
-<script>
-function updateCode() {
-  const code = document.getElementById("codeEditor").value;
-  document.getElementById("codeDisplay").textContent = code;
-  hljs.highlightElement(document.getElementById("codeDisplay"));
-}
-</script>
-
+  <textarea id="editor">print("Hello, Python!")</textarea>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+      mode: "python",
+      lineNumbers: true,
+      theme: "monokai"
+    });
+  </script>
 </body>
 </html>
