@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pyodide in Web Worker</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+	<textarea id="editor">print("Hello, Python!")</textarea>
+	<button id="run">Run</button>
+	<div id="output"></div>
+</body>
+<script>
+const outputDiv = document.getElementById('output');
+
+const worker = new Worker("/dd/worker.js");
+
+worker.onmessage = (event) => {
+	const { type, data } = event.data;
+	switch (type) {
+	case 'loaded':
+		alert("Pyodide loaded!");
+		break;
+	case 'print':
+		outputDiv.textContent += data;
+		break;
+	case 'result':
+		outputDiv.textContent += 'Result: ' + data;
+		break;
+	case 'error':
+		outputDiv.textContent = 'Error: ' + data;
+		break;
+	}
+};
+
+var runButton = document.getElementById("run");
+var codeTextarea = document.getElementById("editor");
+function runCode() {
+	worker.postMessage({ code: codeTextarea.value });
+}
+runButton.addEventListener("click", runCode);
+</script>
+</html>
+
