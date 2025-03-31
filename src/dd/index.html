@@ -3,7 +3,11 @@
 <head>
 	<title>Pyodide in Web Worker</title>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=2.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/monokai.min.css">
 </head>
 <body>
 	<textarea id="editor">print("Hello, Python!")</textarea>
@@ -11,6 +15,16 @@
 	<div id="output"></div>
 </body>
 <script>
+var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+	mode: "python",
+	lineNumbers: true,
+	theme: "monokai"
+});
+document.addEventListener('keydown', function(event) {
+	if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+		event.preventDefault();
+	}
+});
 const outputDiv = document.getElementById('output');
 
 const worker = new Worker("/dd/worker.js");
@@ -22,7 +36,8 @@ worker.onmessage = (event) => {
 		alert("Pyodide loaded!");
 		break;
 	case 'print':
-		outputDiv.textContent += data;
+		outputDiv.appendChild(document.createTextNode(data));
+		outputDiv.appendChild(document.createElement("br"));
 		break;
 	case 'result':
 		outputDiv.textContent += 'Result: ' + data;
@@ -36,7 +51,8 @@ worker.onmessage = (event) => {
 var runButton = document.getElementById("run");
 var codeTextarea = document.getElementById("editor");
 function runCode() {
-	worker.postMessage({ code: codeTextarea.value });
+	outputDiv.innerHTML = "";
+	worker.postMessage({ code: editor.getValue() });
 }
 runButton.addEventListener("click", runCode);
 </script>
