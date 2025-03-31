@@ -15,6 +15,7 @@ self.onmessage = async (event) => {
 		return;
 	var { code } = event.data;
 	try {
+		await self.pyodide.runPythonAsync("import js\njs.pyodide.globals.clear()\n");
 		const result = await self.pyodide.runPythonAsync(code);
 		if (result !== undefined) {
 			postMessage({ type: 'result', data: result });
