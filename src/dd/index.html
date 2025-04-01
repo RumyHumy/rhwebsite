@@ -10,10 +10,34 @@
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/keymap/vim.min.js"></script>
 </head>
+<style>
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader {
+	width: 48px;
+	height: 48px;
+	border: 5px solid #001122;
+	border-bottom-color: transparent;
+	border-radius: 50%;
+	display: inline-block;
+	box-sizing: border-box;
+	animation: rotation 1s linear infinite;
+}
+</style>
 <body>
 	<button id="toggle-vim">Vim</button>
 	<textarea id="editor">print("Hello, Python!")</textarea>
-	<button id="run">Run</button>
+	<div>
+		<span id="loader" class="loader"></span>
+	</div>
+		<button id="run">Run</button>
 	<div id="output"></div>
 </body>
 <script>
@@ -21,7 +45,7 @@
 // E D I T O R
 
 var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-    mode:  "python",
+    mode: "python",
     theme: "monokai",
     lineNumbers: true,
     tabSize: 4,
@@ -43,7 +67,8 @@ toggleVim.addEventListener("click", function() {
 
 // C O N S O L E
 
-const outputElement = document.getElementById('output');
+const outputElement = document.getElementById("output");
+const loaderIcon = document.getElementById("loader");
 
 const worker = new Worker("/dd/worker.js");
 
@@ -51,7 +76,7 @@ worker.onmessage = (event) => {
 	const { type, data } = event.data;
 	switch (type) {
 	case 'loaded':
-		alert("Pyodide loaded!");
+		loaderIcon.style.display = "none";
 		break;
 	case 'print':
 		outputElement.appendChild(document.createTextNode(data));
