@@ -11,9 +11,22 @@
 body {
 	background-color: #272822;
 }
+.page-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+.page-content {
+	display: block;
+	width: clamp(60%, 800px, 100%);
+	height: 100px;
+}
 #editor {
 	width: 100%;
-	height: 100px;
+	height: 400px;
+	resize: vertical;
+    overflow: hidden;
 }
 #output {
 	color: #fff;
@@ -34,14 +47,18 @@ body {
 }
 </style>
 <body>
-	<button id="toggle-vim">Vim</button>
-	<div id="editor">print("Hello, Python!")</div>
-	<div>
-		<span id="loader" class="loader"></span>
+	<div class="page-container">
+		<div class="page-content">
+			<button id="toggle-vim">Vim</button>
+			<div id="editor">print("Hello, Python!")</div>
+			<div>
+				<span id="loader" class="loader"></span>
+			</div>
+				<button id="run">Run (F9)</button>
+				<button id="tests">Tests (F10)</button>
+			<div id="output"></div>
+		</div>
 	</div>
-		<button id="run">Run (F9)</button>
-		<button id="tests">Tests (F10)</button>
-	<div id="output"></div>
 </body>
 <script>
 
@@ -54,6 +71,19 @@ editor.setOptions({
 	tabSize: 4,
 	useSoftTabs: true
 });
+editor.setFontSize(16);
+
+var unsavedChanges = false;
+window.onbeforeunload = function (e) {
+	if (unsavedChanges) {
+		e = e || window.event;
+		// IE and Firefox
+		if (e)
+			e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+		// Safari
+		return "You have unsaved changes. Are you sure you want to leave?";
+	}
+};
 
 var toggleVim = document.getElementById("toggle-vim")
 var isVim = false;
@@ -118,4 +148,3 @@ document.addEventListener('keydown', function(event) {
 });
 </script>
 </html>
-
