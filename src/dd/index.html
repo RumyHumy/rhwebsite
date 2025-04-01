@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Pyodide in Web Worker</title>
+	<title>RH: Programming online</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=2.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
@@ -11,6 +11,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/keymap/vim.min.js"></script>
 </head>
 <style>
+body {
+	background-color: #272822;
+}
 @keyframes rotation {
   from {
     transform: rotate(0deg);
@@ -83,7 +86,6 @@ worker.onmessage = (event) => {
 		outputElement.appendChild(document.createElement("br"));
 		break;
 	case 'result':
-		alert("RES");
 		outputElement.appendChild(document.createTextNode("RESULT: "+data));
 		outputElement.appendChild(document.createElement("br"));
 		break;
