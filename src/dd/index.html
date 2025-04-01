@@ -4,15 +4,16 @@
 	<title>RH: Programming online</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=2.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/monokai.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/keymap/vim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.35.4/ace.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/theme-monokai.js"></script>
 </head>
 <style>
 body {
 	background-color: #272822;
+}
+#editor {
+	width: 100%;
+	height: 100px;
 }
 @keyframes rotation {
   from { transform: rotate(0deg); }
@@ -32,7 +33,7 @@ body {
 </style>
 <body>
 	<button id="toggle-vim">Vim</button>
-	<textarea id="editor">print("Hello, Python!")</textarea>
+	<div id="editor">print("Hello, Python!")</div>
 	<div>
 		<span id="loader" class="loader"></span>
 	</div>
@@ -44,39 +45,19 @@ body {
 
 // E D I T O R
 
-var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-    mode: "python",
-    theme: "monokai",
-    lineNumbers: true,
-    tabSize: 4,
-	indentUnit: 4,
-	indentWithTabs: true,
-    keyMap: "default"
-});
-
-var changes = false;
-editor.on("change", () => {
-	changes = true;
-});
-
-window.addEventListener("beforeunload", (event) => {
-	if (changes) {
-		event.preventDefault();
-		const alertMessage = "You have unsaved changes. Are you sure you want to leave?";
-		event.returnValue = alertMessage;
-		return alertMessage;
-	}
+var editor = ace.edit("editor");
+editor.setTheme("ace/theme/monokai");
+editor.session.setMode("ace/mode/python");
+editor.setOptions({
+	tabSize: 4,
+	useSoftTabs: true
 });
 
 var toggleVim = document.getElementById("toggle-vim")
+var isVim = false;
 toggleVim.addEventListener("click", function() {
-	if (editor.getOption("keyMap") === "vim") {
-		editor.setOption("keyMap", "default");
-		toggleVim.textContent = "Vim";
-	} else {
-		editor.setOption("keyMap", "vim");
-		toggleVim.textContent = "Default";
-	}
+	isVim = !isVim;
+	editor.setKeyboardHandler(isVim ? "ace/keyboard/vim" : null);
 });
 
 // C O N S O L E
