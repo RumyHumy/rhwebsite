@@ -15,12 +15,8 @@ body {
 	background-color: #272822;
 }
 @keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .loader {
@@ -40,7 +36,8 @@ body {
 	<div>
 		<span id="loader" class="loader"></span>
 	</div>
-		<button id="run">Run</button>
+		<button id="run">Run (F9)</button>
+		<button id="tests">Tests (F10)</button>
 	<div id="output"></div>
 </body>
 <script>
@@ -55,6 +52,20 @@ var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
 	indentUnit: 4,
 	indentWithTabs: true,
     keyMap: "default"
+});
+
+var changes = false;
+editor.on("change", () => {
+	changes = true;
+});
+
+window.addEventListener("beforeunload", (event) => {
+	if (changes) {
+		event.preventDefault();
+		const alertMessage = "You have unsaved changes. Are you sure you want to leave?";
+		event.returnValue = alertMessage;
+		return alertMessage;
+	}
 });
 
 var toggleVim = document.getElementById("toggle-vim")
@@ -97,22 +108,30 @@ worker.onmessage = (event) => {
 };
 
 var runButton = document.getElementById("run");
-var codeTextarea = document.getElementById("editor");
+var testsButton = document.getElementById("tests");
+
 function runCode() {
 	outputElement.innerHTML = "";
-	worker.postMessage({ code: editor.getValue() });
+	worker.postMessage({ type: "run", code: editor.getValue() });
 }
+
+function runTests() {
+	worker.postMessage({ type: "tests", code: editor.getValue() });
+}
+
 runButton.addEventListener("click", runCode);
+testsButton.addEventListener("click", runTests);
 
 // H O T K E Y S
 
 document.addEventListener('keydown', function(event) {
-	if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+	if ((event.ctrlKey || event.metaKey) && event.key === 's')
 		event.preventDefault();
-	}
-	if (event.key === 'F9') {
+
+	if (event.key === 'F9')
 		runCode();
-	}
+	if (event.key === 'F10')
+		runTests();
 });
 </script>
 </html>
