@@ -98,6 +98,7 @@ const outputElement = document.getElementById("output");
 const loaderIcon = document.getElementById("loader");
 
 const worker = new Worker("/dd/worker.js");
+var codeRunning = false;
 
 worker.onmessage = (event) => {
 	const { type, data } = event.data;
@@ -110,8 +111,7 @@ worker.onmessage = (event) => {
 		outputElement.appendChild(document.createElement("br"));
 		break;
 	case 'result':
-		outputElement.appendChild(document.createTextNode("RESULT: "+data));
-		outputElement.appendChild(document.createElement("br"));
+		codeRunning = false;
 		break;
 	case 'error':
 		outputElement.appendChild(document.createTextNode("ERROR: "+data));
@@ -124,8 +124,11 @@ var runButton = document.getElementById("run");
 var testsButton = document.getElementById("tests");
 
 function runCode() {
+	if (codeRunning)
+		return;
 	outputElement.innerHTML = "";
 	worker.postMessage({ type: "run", code: editor.getValue() });
+	codeRunning = true;
 }
 
 function runTests() {
