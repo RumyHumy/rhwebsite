@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite folder"; exit 1; }
 
