@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#set -x
+set -x
 
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite folder"; exit 1; }
 
-if [ "$1" != "-test" ] && [ "$1" != "-prod" ]; then
+if [ "$1" != "-test" ] && [ "$1" != "-prod" ] && [ "$1" != "-media" ]; then
 	echo "./run.sh -test/-prod"
 	echo "-test - self-signed SSL keys"
 	echo "-prod - Let's Encrypt signature"
@@ -69,7 +69,7 @@ if [ "$1" = "-prod" ]; then
 	fi
 fi
 
-if [ "$1" = "-test" ]; then
+if [ "$1" = "-test" ] || [ "$1" = "-media" ]; then
 	server_names="localhost"
 	https_redirect="https://localhost:8443"
 	port="8080"
@@ -83,20 +83,26 @@ if [ "$1" = "-test" ]; then
 	fi
 fi
 
+media_ip="localhost"
+media_port="8081"
+
 # T E M P L A T I N G   C O N F I G S
 
 echo "[run.sh] Templating configs..."
-$sudo cat ./nginx/templ.nginx.conf \
-	| sed "s@<NGINX-DIR>@$nginx_dir@" \
+$sudo sed ./nginx/templ.nginx.conf \
+	-e "s@<NGINX-DIR>@$nginx_dir@" \
 	> ./nginx/nginx.conf
-$sudo cat ./nginx/templ.rhstatic.conf \
-	| sed "s@<SERVER-NAMES>@$server_names@" \
-	| sed "s@<SERVER-REDIRECT>@$https_redirect@" \
-	| sed "s@<ROOT-DIR>@$static_dir@" \
-	| sed "s@<PORT>@$port@" \
-	| sed "s@<SSL-PORT>@$ssl_port@" \
-	| sed "s@<SSL-CRT-PATH>@$ssl_crt_path@" \
-	| sed "s@<SSL-KEY-PATH>@$ssl_key_path@" \
+$sudo sed ./nginx/templ.rhstatic.conf \
+	-e "s@<SERVER-NAMES>@$server_names@" \
+	-e "s@<SERVER-REDIRECT>@$https_redirect@" \
+	-e "s@<ROOT-DIR>@$static_dir@" \
+	-e "s@<PORT>@$port@" \
+	-e "s@<SSL-PORT>@$ssl_port@" \
+	-e "s@<SSL-CRT-PATH>@$ssl_crt_path@" \
+	-e "s@<SSL-KEY-PATH>@$ssl_key_path@" \
+	-e `[ "$1" = "-media" ] && echo "s@<MEDIA-PROXY-BLOCK>@@g" || echo "s@<MEDIA-PROXY-BLOCK>.*<MEDIA-PROXY-BLOCK>@@g"` \
+	-e `echo "s@<MEDIA-IP>@$media_ip@g"` \
+	-e `echo "s@<MEDIA-PORT>@$media_port@g"` \
 	> ./nginx/rhstatic.conf
 
 # C O P Y I N G   C O N F I G S
