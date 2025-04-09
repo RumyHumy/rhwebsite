@@ -41,10 +41,10 @@ static_dir=$(pwd)/src
 etc_dir=/etc
 nginx_dir=/etc/nginx
 sudo="sudo"
+[ hascmd "sudo" ] || sudo=""
 if [ `echo $PREFIX | grep -o "com.termux"` ]; then 
 	etc_dir="/data/data/com.termux/files/usr/etc"
 	nginx_dir="$etc_dir/nginx"
-	sudo=""
 fi
 if [ ! -d "$nginx_dir" ]; then
 	echo "NGINX config directory does not exists"
