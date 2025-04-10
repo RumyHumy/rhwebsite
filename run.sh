@@ -102,11 +102,9 @@ $sudo sed -E ./nginx/templ.rhstatic.conf \
 echo "[run.sh] Copying configs..."
 mkdir "$nginx_dir/conf.d"
 $sudo rm "$nginx_dir/nginx.conf"
-$sudo rm "$nginx_dir/conf.d/rhres.conf"
 $sudo rm "$nginx_dir/conf.d/rhstatic.conf"
 $sudo cp ./nginx/nginx.conf "$nginx_dir/nginx.conf"
 $sudo cp ./nginx/rhstatic.conf "$nginx_dir/conf.d/rhstatic.conf"
-$sudo cp ./nginx/rhres.conf "$nginx_dir/conf.d/rhres.conf"
 
 # S T A R T U P
 
