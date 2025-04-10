@@ -13,21 +13,21 @@ fi
 
 # D E P E N D E N C I E S
 
+all_present=1
 hascmd() {
 	if command -v "$1" 2>&1 >/dev/null; then
 		echo "[run.sh/LOG] '$1' present"
 		return 1
 	fi
+	all_present=0
 	echo "[run.sh/ERR] '$1' not present!"
 	return 0
 }
 
-all_present=1
-hascmd "nginx" || all_present=0
-hascmd "openssl" || all_present=0
-[ "$1" != "-prod" ] || hascmd "crontab" || all_present=0
-[ "$1" != "-prod" ] || hascmd "certbot" || all_present=0
-sudo=""; hascmd "sudo" || sudo="sudo"
+hascmd "nginx"
+hascmd "openssl"
+[ "$1" != "-prod" ] || hascmd "crontab"
+[ "$1" != "-prod" ] || hascmd "certbot"
 
 if [ "$all_present" = "0" ]; then
 	echo "[run.sh/ERR] Some dependencies are not present"
@@ -40,6 +40,7 @@ echo "[run.sh/LOG] Setuping platform dependencies..."
 static_dir=$(pwd)/src
 etc_dir=/etc
 nginx_dir=/etc/nginx
+sudo=""; hascmd "sudo" || sudo="sudo"
 if [ `echo $PREFIX | grep -o "com.termux"` ]; then 
 	etc_dir="/data/data/com.termux/files/usr/etc"
 	nginx_dir="$etc_dir/nginx"
