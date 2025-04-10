@@ -4,33 +4,30 @@
 
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite directory"; exit 1; }
 
-if [ "$1" != "-test" ] && [ "$1" != "-prod" ] && [ "$1" != "-res" ]; then
+if [ "$1" != "-test" ] && [ "$1" != "-prod" ]; then
 	echo "./run.sh -test/-prod [-resproxy <IP>]"
 	echo "-test - self-signed SSL keys"
 	echo "-prod - let's encrypt signature with rumyhumy.ru domain"
-	echo "-res - resources server"
-	echo "... -resproxy <ID> - use proxy at 8080 for resources at /res URI"
 	exit 1
 fi
 
 # D E P E N D E N C I E S
 
-all_present=0
 hascmd() {
 	if command -v "$1" 2>&1 >/dev/null; then
 		echo "[run.sh/LOG] '$1' present"
 		return 1
 	fi
-	all_present=1
 	echo "[run.sh/ERR] '$1' not present!"
 	return 0
 }
 
 all_present=1
-hascmd "nginx"
-hascmd "openssl"
-[ "$1" = "-prod" ] && hascmd "crontab"
-[ "$1" = "-prod" ] && hascmd "certbot"
+hascmd "nginx" || all_present=0
+hascmd "openssl" || all_present=0
+[ "$1" != "-prod" ] || hascmd "crontab" || all_present=0
+[ "$1" != "-prod" ] || hascmd "certbot" || all_present=0
+sudo=""; hascmd "sudo" || sudo="sudo"
 
 if [ "$all_present" = "0" ]; then
 	echo "[run.sh/ERR] Some dependencies are not present"
@@ -43,7 +40,6 @@ echo "[run.sh/LOG] Setuping platform dependencies..."
 static_dir=$(pwd)/src
 etc_dir=/etc
 nginx_dir=/etc/nginx
-sudo=""; hascmd "sudo" || sudo="sudo"
 if [ `echo $PREFIX | grep -o "com.termux"` ]; then 
 	etc_dir="/data/data/com.termux/files/usr/etc"
 	nginx_dir="$etc_dir/nginx"
@@ -71,16 +67,11 @@ if [ "$1" = "-prod" ]; then
 	fi
 fi
 
-if [ "$1" = "-test" ] || [ "$1" = "-res" ]; then
+if [ "$1" = "-test" ]; then
 	server_names="localhost"
 	https_redirect="https://localhost:8443"
 	port="8080"
 	ssl_port="8443"
-	if [ "$1" = "-res" ]; then
-		https_redirect="https://localhost:8444"
-		port="8081"
-		ssl_port="8444"
-	fi
 	ssl_crt_path="$etc_dir/fakessl/fake.crt"
 	ssl_key_path="$etc_dir/fakessl/fake.key"
 	if [ ! -d "$etc_dir/fakessl" ]; then
@@ -105,14 +96,6 @@ $sudo sed -E ./nginx/templ.rhstatic.conf \
 	-e "s@<SSL-CRT-PATH>@$ssl_crt_path@" \
 	-e "s@<SSL-KEY-PATH>@$ssl_key_path@" \
 	> ./nginx/rhstatic.conf
-if [ "$2" = "-resproxy" ]; then
-	$sudo sed -E ./nginx/templ.rhres.conf \
-		-e "s@<RES-IP>@$3@" \
-		-e "s@<RES-PORT>@8444@" \
-		> ./nginx/rhres.conf
-else
-	echo "" > ./nginx/rhres.conf
-fi
 
 # C O P Y I N G   C O N F I G S
 
