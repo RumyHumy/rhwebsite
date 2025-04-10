@@ -14,23 +14,21 @@ fi
 
 # D E P E N D E N C I E S
 
-all_present=1
 hascmd() {
 	if command -v "$1" 2>&1 >/dev/null; then
 		echo "[run.sh/LOG] '$1' present"
 		return 1
 	fi
-	all_present=0
 	echo "[run.sh/ERR] '$1' not present!"
 	return 0
 }
 
-hascmd "nginx"
-hascmd "openssl"
-[ "$1" != "-prod" ] || hascmd "crontab"
-[ "$1" != "-prod" ] || hascmd "certbot"
-sudo=""
-hascmd "sudo" || sudo="sudo"
+all_present=1
+hascmd "nginx" || all_present=0
+hascmd "openssl" || all_present=0
+[ "$1" != "-prod" ] || hascmd "crontab" || all_present=0
+[ "$1" != "-prod" ] || hascmd "certbot" || all_present=0
+sudo=""; hascmd "sudo" || sudo="sudo"
 
 if [ "$all_present" = "0" ]; then
 	echo "[run.sh/ERR] Some dependencies are not present"
@@ -85,7 +83,6 @@ if [ "$1" = "-test" ]; then
 fi
 
 # T E M P L A T I N G   C O N F I G S
-res_proxy_comment=$([ "$2" = "-resproxy"] && "#" || "")
 echo "[run.sh] Templating configs..."
 $sudo sed -E ./nginx/templ.nginx.conf \
 	-e "s@<NGINX-DIR>@$nginx_dir@" \
@@ -99,12 +96,15 @@ $sudo sed -E ./nginx/templ.rhstatic.conf \
 	-e "s@<SSL-PORT>@$ssl_port@" \
 	-e "s@<SSL-CRT-PATH>@$ssl_crt_path@" \
 	-e "s@<SSL-KEY-PATH>@$ssl_key_path@" \
-	-e "s@<RES-PROXY-COMMENT>@$res_proxy_comment@"\
 	> ./nginx/rhstatic.conf
-$sudo sed -E ./nginx/templ.rhres.conf \
-	-e "s@<RES-IP>@$3@" \
-	-e "s@<RES-PORT>@8080@" \
-	> ./nginx/rhres.conf
+if [ "$2" = "-resproxy" ]; then
+	$sudo sed -E ./nginx/templ.rhres.conf \
+		-e "s@<RES-IP>@$3@" \
+		-e "s@<RES-PORT>@8080@" \
+		> ./nginx/rhres.conf
+else
+	echo "" > ./nginx/rhres.conf
+fi
 
 # C O P Y I N G   C O N F I G S
 
