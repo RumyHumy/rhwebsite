@@ -108,7 +108,7 @@ $sudo sed -E ./nginx/templ.rhstatic.conf \
 if [ "$2" = "-resproxy" ]; then
 	$sudo sed -E ./nginx/templ.rhres.conf \
 		-e "s@<RES-IP>@$3@" \
-		-e "s@<RES-PORT>@8080@" \
+		-e "s@<RES-PORT>@8443@" \
 		> ./nginx/rhres.conf
 else
 	echo "" > ./nginx/rhres.conf
