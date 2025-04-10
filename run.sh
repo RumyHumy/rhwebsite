@@ -8,7 +8,7 @@ if [ "$1" != "-test" ] && [ "$1" != "-prod" ]; then
 	echo "./run.sh -test/-prod [-resproxy <IP>]"
 	echo "-test - self-signed SSL keys"
 	echo "-prod - let's encrypt signature with rumyhumy.ru domain"
-	echo "-resproxy <ID> - use proxy at 8080 for resources at /res URI"
+	echo "-resproxy <IP> - use proxy at 8080 for resources at /res URI"
 	exit 1
 fi
 
@@ -102,7 +102,7 @@ $sudo sed -E ./nginx/templ.rhstatic.conf \
 if [ "$2" = "-resproxy" ]; then
 	$sudo sed -E ./nginx/templ.rhres.conf \
 		-e "s@<RES-IP>@$3@" \
-		-e "s@<RES-PORT>@8080@" \
+		-e "s@<RES-PORT>@$4@" \
 		> ./nginx/rhres.conf
 else
 	echo "" > ./nginx/rhres.conf
