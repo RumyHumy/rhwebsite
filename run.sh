@@ -2,12 +2,13 @@
 
 #set -x
 
-cd ~/rhwebsite || { echo "Could't find ~/rhwebsite folder"; exit 1; }
+cd ~/rhwebsite || { echo "Could't find ~/rhwebsite directory"; exit 1; }
 
 if [ "$1" != "-test" ] && [ "$1" != "-prod" ]; then
-	echo "./run.sh -test/-prod"
+	echo "./run.sh -test/-prod [-resproxy <IP>]"
 	echo "-test - self-signed SSL keys"
 	echo "-prod - let's encrypt signature with rumyhumy.ru domain"
+	echo "-resproxy <ID> - use proxy at 8080 for resources at /res URI"
 	exit 1
 fi
 
@@ -17,17 +18,19 @@ all_present=1
 hascmd() {
 	if command -v "$1" 2>&1 >/dev/null; then
 		echo "[run.sh/LOG] '$1' present"
-		return 0
+		return 1
 	fi
 	all_present=0
 	echo "[run.sh/ERR] '$1' not present!"
-	return 1
+	return 0
 }
 
 hascmd "nginx"
 hascmd "openssl"
 [ "$1" != "-prod" ] || hascmd "crontab"
 [ "$1" != "-prod" ] || hascmd "certbot"
+sudo=""
+hascmd "sudo" || sudo="sudo"
 
 if [ "$all_present" = "0" ]; then
 	echo "[run.sh/ERR] Some dependencies are not present"
@@ -40,8 +43,6 @@ echo "[run.sh/LOG] Setuping platform dependencies..."
 static_dir=$(pwd)/src
 etc_dir=/etc
 nginx_dir=/etc/nginx
-sudo="sudo"
-[ hascmd "sudo" ] || sudo=""
 if [ `echo $PREFIX | grep -o "com.termux"` ]; then 
 	etc_dir="/data/data/com.termux/files/usr/etc"
 	nginx_dir="$etc_dir/nginx"
@@ -84,12 +85,13 @@ if [ "$1" = "-test" ]; then
 fi
 
 # T E M P L A T I N G   C O N F I G S
-
+res_proxy_comment=$([ "$2" = "-resproxy"] && "#" || "")
 echo "[run.sh] Templating configs..."
 $sudo sed -E ./nginx/templ.nginx.conf \
 	-e "s@<NGINX-DIR>@$nginx_dir@" \
 	> ./nginx/nginx.conf
-$sudo sed ./nginx/templ.rhstatic.conf \
+$sudo sed -E ./nginx/templ.rhstatic.conf \
+	-e "s@<NGINX-DIR>@$nginx_dir@" \
 	-e "s@<SERVER-NAMES>@$server_names@" \
 	-e "s@<SERVER-REDIRECT>@$https_redirect@" \
 	-e "s@<ROOT-DIR>@$static_dir@" \
@@ -97,14 +99,23 @@ $sudo sed ./nginx/templ.rhstatic.conf \
 	-e "s@<SSL-PORT>@$ssl_port@" \
 	-e "s@<SSL-CRT-PATH>@$ssl_crt_path@" \
 	-e "s@<SSL-KEY-PATH>@$ssl_key_path@" \
+	-e "s@<RES-PROXY-COMMENT>@$res_proxy_comment@"\
 	> ./nginx/rhstatic.conf
+$sudo sed -E ./nginx/templ.rhres.conf \
+	-e "s@<RES-IP>@$3@" \
+	-e "s@<RES-PORT>@8080@" \
+	> ./nginx/rhres.conf
 
 # C O P Y I N G   C O N F I G S
 
 echo "[run.sh] Copying configs..."
 mkdir "$nginx_dir/conf.d"
+$sudo rm "$nginx_dir/nginx.conf"
+$sudo rm "$nginx_dir/conf.d/rhres.conf"
+$sudo rm "$nginx_dir/conf.d/rhstatic.conf"
 $sudo cp ./nginx/nginx.conf "$nginx_dir/nginx.conf"
 $sudo cp ./nginx/rhstatic.conf "$nginx_dir/conf.d/rhstatic.conf"
+$sudo cp ./nginx/rhres.conf "$nginx_dir/conf.d/rhres.conf"
 
 # S T A R T U P
 
