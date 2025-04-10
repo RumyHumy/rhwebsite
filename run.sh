@@ -4,11 +4,12 @@
 
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite directory"; exit 1; }
 
-if [ "$1" != "-test" ] && [ "$1" != "-prod" ]; then
+if [ "$1" != "-test" ] && [ "$1" != "-prod" ] && [ "$1" != "-res" ]; then
 	echo "./run.sh -test/-prod [-resproxy <IP>]"
 	echo "-test - self-signed SSL keys"
 	echo "-prod - let's encrypt signature with rumyhumy.ru domain"
-	echo "-resproxy <ID> - use proxy at 8080 for resources at /res URI"
+	echo "-res - resources server"
+	echo "... -resproxy <ID> - use proxy at 8080 for resources at /res URI"
 	exit 1
 fi
 
@@ -70,11 +71,16 @@ if [ "$1" = "-prod" ]; then
 	fi
 fi
 
-if [ "$1" = "-test" ]; then
+if [ "$1" = "-test" ] || [ "$1" = "-res" ]; then
 	server_names="localhost"
 	https_redirect="https://localhost:8443"
 	port="8080"
 	ssl_port="8443"
+	if [ "$1" = "-res" ]; then
+		https_redirect="https://localhost:8444"
+		port="8081"
+		ssl_port="8444"
+	fi
 	ssl_crt_path="$etc_dir/fakessl/fake.crt"
 	ssl_key_path="$etc_dir/fakessl/fake.key"
 	if [ ! -d "$etc_dir/fakessl" ]; then
