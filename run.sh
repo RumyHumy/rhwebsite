@@ -5,8 +5,9 @@
 cd ~/rhwebsite || { echo "Could't find ~/rhwebsite directory"; exit 1; }
 
 if [ "$1" != "-local" ] && [ "$1" != "-prod" ]; then
-	echo "[port= ssl_port=] ./run.sh -local/-prod [-resproxy <IP>]"
+	echo "[port= ssl_port= res_proxy_uri=] ./run.sh -local/-prod"
 	echo "[port= ssl_port=] - custom port setup"
+	echo "[res_proxy_uri=] - custom port setup"
 	echo "-local - self-signed SSL keys"
 	echo "-prod - let's encrypt signature with rumyhumy.ru domain"
 	exit 1
@@ -84,6 +85,7 @@ if [ "$1" = "-local" ]; then
 fi
 
 # T E M P L A T I N G   C O N F I G S
+
 echo "[run.sh] Templating configs..."
 $sudo sed -E ./nginx/templ.nginx.conf \
 	-e "s@<NGINX-DIR>@$nginx_dir@" \
@@ -98,6 +100,13 @@ $sudo sed -E ./nginx/templ.rhstatic.conf \
 	-e "s@<SSL-CRT-PATH>@$ssl_crt_path@" \
 	-e "s@<SSL-KEY-PATH>@$ssl_key_path@" \
 	> ./nginx/rhstatic.conf
+if [ -z "$res_proxy_uri" ]; then
+	echo "" > ./nginx/rhres.conf
+else
+	$sudo sed -E ./nginx/templ.rhres.conf \
+		-e "s@<RES-PROXY-URI>@$res_proxy_uri@" \
+		> ./nginx/rhres.conf
+fi
 
 # C O P Y I N G   C O N F I G S
 
@@ -105,8 +114,10 @@ echo "[run.sh] Copying configs..."
 mkdir "$nginx_dir/conf.d"
 $sudo rm "$nginx_dir/nginx.conf"
 $sudo rm "$nginx_dir/conf.d/rhstatic.conf"
+$sudo rm "$nginx_dir/conf.d/rhres.conf"
 $sudo cp ./nginx/nginx.conf "$nginx_dir/nginx.conf"
 $sudo cp ./nginx/rhstatic.conf "$nginx_dir/conf.d/rhstatic.conf"
+$sudo cp ./nginx/rhres.conf "$nginx_dir/conf.d/rhres.conf"
 
 # S T A R T U P
 
