@@ -6,6 +6,6 @@ if [ -z $1 ] || [ -z $ssh_user ] || [ -z $ssh_ip ] || [ -z $ssh_port ]; then
 	exit
 fi
 
-rsync -avz --delete -e "ssh -p $ssh_port" ~/rhwebsite $ssh_user@$ssh_ip:~/rhwebsite --exclude ~/rhwebsite/src/res
+rsync -av --delete -e "ssh -p $ssh_port" ~/rhwebsite $ssh_user@$ssh_ip:~ --exclude ./src/res --exclude .git
 
 ssh -p $ssh_port $ssh_user@$ssh_ip "mkdir ~/rhres; ln -s ~/rhres ~/rhwebsite/src/res; cd ~/rhwebsite; ./run.sh $1"
