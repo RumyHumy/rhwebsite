@@ -1,0 +1,1 @@
+[program:rhuvicorn] command=/usr/bin/python3 -m uvicorn --bind 0.0.0.0:8000 main:app directory=/path/to/your/app user=rami autostart=false autorestart=false redirect_stderr=true tee /etc/supervisor/conf.d/rhuvicorn.conf
